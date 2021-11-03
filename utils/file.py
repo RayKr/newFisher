@@ -31,19 +31,20 @@ def default_loader(filename):
     return img_tensor
 
 
-def read_adv_list(path):
+def read_list(filename):
     """
-    返回攻击样本list
-    :param path:
+    读取文件，返回图片list
+    :param filename: 文件名
     :return:
     """
-    adv_list = []
-    with open(path, "r") as f:
+    list = []
+    with open(filename, "r") as f:
         for line in f.readlines():
-            line = line.strip('\n')  # 去掉列表中每一个元素的换行符
-            split = line.split(' ')
-            adv_list.append(split)
-    return adv_list
+            content = line.strip('\n').split(' ')  # 去掉列表中每一个元素的换行符，然后分割
+            name = content[0]
+            labels = int(content[1])
+            list.append((name, labels))
+    return list
 
 
 def read_labels(path, shuffle=False):
@@ -63,15 +64,7 @@ def read_clean_list(filename):
     从clean_label.txt文件里获取训练集和测试集
     根据clean_label.txt的数据分布规律，可以每隔len行随机80%行作为训练集，剩下的作为测试集
     """
-    result, train_list, test_list = [], [], []
-    with open(filename, "r") as f:
-        for line in f.readlines():
-            content = line.strip('\n').split(' ')  # 去掉列表中每一个元素的换行符，然后分割
-            name = content[0]
-            labels = int(content[1])
-            # for value in content[1:]:
-            #     labels.append(int(value))
-            result.append((name, labels))
+    result = read_list(filename)
     # 将80%的数据作为训练集，20%数据作为测试集
     point = int(len(result) * 0.8)
     # 先打乱某一分类的样本的顺序

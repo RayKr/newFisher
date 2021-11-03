@@ -7,7 +7,7 @@ import os
 from torch.utils.data import DataLoader
 
 from model.ResNet import resnet20_cifar
-from utils.file import read_clean_list, TrainSet
+from utils.file import read_clean_list, TrainSet, read_list
 
 # 定义是否使用GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -26,10 +26,13 @@ LR = 0.01  # 学习率
 
 # 读取数据
 train_list, test_list = read_clean_list('../Datasets/CIFAR-10/clean_label.txt')
+adv_list = read_list('../Datasets/CIFAR-10/adv.txt')
 train_data = TrainSet(data_list=train_list, image_dir='../Datasets/CIFAR-10/clean/')
 test_data = TrainSet(data_list=test_list, image_dir='../Datasets/CIFAR-10/clean/')
+adv_data = TrainSet(data_list=adv_list, image_dir='../Datasets/CIFAR-10/clean/')
 train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
 test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
+adv_loader = DataLoader(adv_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
 # Cifar-10的标签
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
@@ -42,6 +45,22 @@ net = resnet20_cifar().to(device)
 criterion = nn.CrossEntropyLoss()
 # 优化方式为mini-batch momentum-SGD，并采用L2正则化（权重衰减）
 optimizer = optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=5e-4)
+
+
+def eval_acc(dataloader, net, device):
+    total, correct = 0, 0
+    for data in dataloader:
+        net.eval()
+        images, labels = data
+        images, labels = images.to(device), labels.to(device)
+        outputs = net(images)
+        # 取得分最高的那个类 (outputs.data的索引号)
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum()
+    acc = 100. * correct / total
+    return acc
+
 
 # 训练
 if __name__ == "__main__":
@@ -85,29 +104,22 @@ if __name__ == "__main__":
                 # 每训练完一个epoch测试一下准确率
                 print("Waiting Test!")
                 with torch.no_grad():
-                    correct = 0
-                    total = 0
-                    for data in test_loader:
-                        net.eval()
-                        images, labels = data
-                        images, labels = images.to(device), labels.to(device)
-                        outputs = net(images)
-                        # 取得分最高的那个类 (outputs.data的索引号)
-                        _, predicted = torch.max(outputs.data, 1)
-                        total += labels.size(0)
-                        correct += (predicted == labels).sum()
-                    print('测试分类准确率为：%.3f%%' % (100 * correct / total))
-                    acc = 100. * correct / total
+                    clean_acc = eval_acc(test_loader, net, device)
+                    print('测试Clean分类准确率为：%.3f%%' % clean_acc)
+                    adv_acc = eval_acc(adv_loader, net, device)
+                    print('测试Adv分类准确率为：%.3f%%' % adv_acc)
+                    f.write("EPOCH=%03d,Accuracy=%.3f,Adv_Accuracy=%.3f%%" % (epoch + 1, clean_acc, adv_acc))
+                    f.write('\n')
+                    f.flush()
+
                     # 将每次测试结果实时写入acc.txt文件中
                     print('Saving model......')
                     torch.save(net.state_dict(), '%s/net_%03d.pth' % (args.outf, epoch + 1))
-                    f.write("EPOCH=%03d,Accuracy= %.3f%%" % (epoch + 1, acc))
-                    f.write('\n')
-                    f.flush()
+
                     # 记录最佳测试分类准确率并写入best_acc.txt文件中
-                    if acc > best_acc:
+                    if clean_acc > best_acc:
                         f3 = open("best_acc.txt", "w")
-                        f3.write("EPOCH=%d,best_acc= %.3f%%" % (epoch + 1, acc))
+                        f3.write("EPOCH=%d,best_acc= %.3f%%" % (epoch + 1, clean_acc))
                         f3.close()
-                        best_acc = acc
+                        best_acc = clean_acc
             print("Training Finished, TotalEPOCH=%d" % EPOCH)
