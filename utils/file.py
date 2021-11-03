@@ -59,14 +59,16 @@ def read_labels(path, shuffle=False):
     return result
 
 
-def read_clean_list(filename):
+def read_clean_list(filename, rate=0.8):
     """
     从clean_label.txt文件里获取训练集和测试集
     根据clean_label.txt的数据分布规律，可以每隔len行随机80%行作为训练集，剩下的作为测试集
+    :param filename: 文件名
+    :param rate: 划分训练集和测试集的比例，默认80%训练集，20%测试集
     """
     result = read_list(filename)
     # 将80%的数据作为训练集，20%数据作为测试集
-    point = int(len(result) * 0.8)
+    point = int(len(result) * rate)
     # 先打乱某一分类的样本的顺序
     random.shuffle(result)
     # 再划分

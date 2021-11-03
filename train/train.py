@@ -7,6 +7,7 @@ import os
 from torch.utils.data import DataLoader
 
 from model.ResNet import resnet20_cifar
+from eval import eval_acc
 from utils.file import read_clean_list, TrainSet, read_list
 
 # 定义是否使用GPU
@@ -15,7 +16,7 @@ print('current device=', device)
 
 # 参数设置,使得我们能够手动输入命令行参数，就是让风格变得和Linux命令行差不多
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
-parser.add_argument('--outf', default='./model/', help='folder to output images and model checkpoints')  # 输出结果保存路径
+parser.add_argument('--outf', default='./net/', help='folder to output images and model checkpoints')  # 输出结果保存路径
 args = parser.parse_args()
 
 # 超参数设置
@@ -25,8 +26,10 @@ BATCH_SIZE = 120  # 批处理尺寸(batch_size)
 LR = 0.01  # 学习率
 
 # 读取数据
-train_list, test_list = read_clean_list('../Datasets/CIFAR-10/clean_label.txt')
+train_list, test_list = read_clean_list('../Datasets/CIFAR-10/clean_label.txt', 0.5)
 adv_list = read_list('../Datasets/CIFAR-10/adv.txt')
+# clean和adv 简单混合
+train_list = train_list + adv_list
 train_data = TrainSet(data_list=train_list, image_dir='../Datasets/CIFAR-10/clean/')
 test_data = TrainSet(data_list=test_list, image_dir='../Datasets/CIFAR-10/clean/')
 adv_data = TrainSet(data_list=adv_list, image_dir='../Datasets/CIFAR-10/clean/')
@@ -45,21 +48,6 @@ net = resnet20_cifar().to(device)
 criterion = nn.CrossEntropyLoss()
 # 优化方式为mini-batch momentum-SGD，并采用L2正则化（权重衰减）
 optimizer = optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=5e-4)
-
-
-def eval_acc(dataloader, net, device):
-    total, correct = 0, 0
-    for data in dataloader:
-        net.eval()
-        images, labels = data
-        images, labels = images.to(device), labels.to(device)
-        outputs = net(images)
-        # 取得分最高的那个类 (outputs.data的索引号)
-        _, predicted = torch.max(outputs.data, 1)
-        total += labels.size(0)
-        correct += (predicted == labels).sum()
-    acc = 100. * correct / total
-    return acc
 
 
 # 训练
@@ -108,7 +96,7 @@ if __name__ == "__main__":
                     print('测试Clean分类准确率为：%.3f%%' % clean_acc)
                     adv_acc = eval_acc(adv_loader, net, device)
                     print('测试Adv分类准确率为：%.3f%%' % adv_acc)
-                    f.write("EPOCH=%03d,Accuracy=%.3f,Adv_Accuracy=%.3f%%" % (epoch + 1, clean_acc, adv_acc))
+                    f.write("EPOCH=%03d, Accuracy=%.3f%%, Adv_Accuracy=%.3f%%" % (epoch + 1, clean_acc, adv_acc))
                     f.write('\n')
                     f.flush()
 
