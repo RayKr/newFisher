@@ -5,7 +5,7 @@ import argparse
 import os
 
 from torch.utils.data import DataLoader
-import foolbox as fb
+from attack.fgm import FGM
 from attack.fgsm import fgsm_attack
 from model.ResNet import resnet20_cifar, resnet32_cifar
 from eval import eval_acc
@@ -43,6 +43,7 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship'
 
 # 模型定义-ResNet
 net = resnet20_cifar().to(device)
+
 
 # 定义损失函数和优化方式
 # 损失函数为交叉熵，多用于多分类问题
@@ -82,10 +83,10 @@ if __name__ == "__main__":
                     loss.backward()     # 反向传播计算梯度，注意先不要更新梯度，即optimizer.step()
 
                     # 对抗训练
-                    adv_x = fgsm_attack(inputs, 0.1, inputs.grad.data)
+                    adv_x = fgsm_attack(inputs, 0.25, inputs.grad)
                     adv_y = net(adv_x)
-                    loss_adv = criterion(adv_y, labels)
-                    loss_adv.backward()
+                    loss = criterion(adv_y, labels)
+                    loss.backward()
 
                     # 梯度下降
                     optimizer.step()
