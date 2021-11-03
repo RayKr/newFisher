@@ -58,6 +58,9 @@ if __name__ == "__main__":
     print("Start Training, Resnet-18!")  # 定义遍历数据集的次数
     with open("acc.txt", "w") as f:
         with open("log.txt", "w") as f2:
+            # 如果pre_epoch不为0，则判断时手动调参后，继续训练，所以需要读取上次保存的模型参数
+            if pre_epoch != 0:
+                net.load_state_dict(torch.load('./net/net_%03d.pth' % (pre_epoch + 1)))
             for epoch in range(pre_epoch, EPOCH):
                 print('\nEpoch: %d' % (epoch + 1))
                 net.train()
