@@ -5,8 +5,9 @@ import argparse
 import os
 
 from torch.utils.data import DataLoader
-
-from model.ResNet import resnet20_cifar
+import foolbox as fb
+from attack.fgsm import fgsm_attack
+from model.ResNet import resnet20_cifar, resnet32_cifar
 from eval import eval_acc
 from utils.file import read_clean_list, TrainSet, read_list
 
@@ -26,10 +27,10 @@ BATCH_SIZE = 120  # 批处理尺寸(batch_size)
 LR = 0.01  # 学习率
 
 # 读取数据
-train_list, test_list = read_clean_list('../Datasets/CIFAR-10/clean_label.txt', 0.5)
+train_list, test_list = read_clean_list('../Datasets/CIFAR-10/clean_label.txt', 0.8)
 adv_list = read_list('../Datasets/CIFAR-10/adv.txt')
 # clean和adv 简单混合
-train_list = train_list + adv_list
+# train_list = train_list + adv_list
 train_data = TrainSet(data_list=train_list, image_dir='../Datasets/CIFAR-10/clean/')
 test_data = TrainSet(data_list=test_list, image_dir='../Datasets/CIFAR-10/clean/')
 adv_data = TrainSet(data_list=adv_list, image_dir='../Datasets/CIFAR-10/clean/')
@@ -72,12 +73,21 @@ if __name__ == "__main__":
                     length = len(train_loader)
                     inputs, labels = data
                     inputs, labels = inputs.to(device), labels.to(device)
+                    inputs.requires_grad = True
                     optimizer.zero_grad()
 
-                    # forward + backward
+                    # 正常训练
                     outputs = net(inputs)
-                    loss = criterion(outputs, labels)
-                    loss.backward()
+                    loss = criterion(outputs, labels)   # 计算前向loss
+                    loss.backward()     # 反向传播计算梯度，注意先不要更新梯度，即optimizer.step()
+
+                    # 对抗训练
+                    adv_x = fgsm_attack(inputs, 0.1, inputs.grad.data)
+                    adv_y = net(adv_x)
+                    loss_adv = criterion(adv_y, labels)
+                    loss_adv.backward()
+
+                    # 梯度下降
                     optimizer.step()
 
                     # 每训练1个batch打印一次loss和准确率

@@ -17,10 +17,10 @@ adv_data = TrainSet(data_list=adv_list, image_dir='../Datasets/CIFAR-10/clean/')
 adv_loader = DataLoader(adv_data, batch_size=120, shuffle=False, num_workers=2)
 
 
-def do_test(epoch=0, desc=None):
+def do_test(epoch=1, desc=None):
     # 加载模型
     net = resnet20_cifar().to(device)
-    net.load_state_dict(torch.load('./net/net_%03d.pth' % (epoch + 1)))
+    net.load_state_dict(torch.load('./net/net_%03d.pth' % epoch))
     net.eval()
 
     print('----------------- Epoch=%3d -----------------' % epoch)
@@ -34,4 +34,5 @@ def do_test(epoch=0, desc=None):
 
 
 if __name__ == "__main__":
-    do_test(106, 'clean测试集上的模型直接预测对抗样本（未进行对抗训练）')
+    # do_test(106, 'clean测试集上的模型直接预测对抗样本（未进行对抗训练）')
+    do_test(135, 'clean和adv进行简单混合，clean是总样本的50%（未进行对抗训练）')
