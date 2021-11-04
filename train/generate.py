@@ -29,6 +29,6 @@ if __name__ == "__main__":
         # 保存图片
         for img in images:
             pic = toPIL(img)
-            pic.save('../Datasets/gen_adv/fgsm_0.15/%d.jpg' % count)
-            print('生成fgsm对抗样本，epsilon=0.15：%d.jpg' % count)
+            pic.save('../Datasets/gen_adv/fgsm_0.03/%d.jpg' % count)
+            print('生成fgsm对抗样本，epsilon=0.03：%d.jpg' % count)
             count += 1
