@@ -5,12 +5,14 @@ import argparse
 import os
 
 from torch.utils.data import DataLoader
+from torchvision.transforms import transforms
+
 from attack.fgm import FGM
 from attack.fgsm import fgsm_attack
 from attack.pgd import pgd_attack
 from model.ResNet import resnet20_cifar, resnet32_cifar
 from eval import eval_acc
-from utils.file import read_clean_list, TrainSet, read_list
+from utils.file import TrainSet, read_list
 
 # 定义是否使用GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -22,21 +24,45 @@ parser.add_argument('--outf', default='./net/', help='folder to output images an
 args = parser.parse_args()
 
 # 超参数设置
-EPOCH = 145  # 遍历数据集次数
-pre_epoch = 134  # 定义已经遍历数据集的次数
+EPOCH = 200  # 遍历数据集次数
+pre_epoch = 156  # 定义已经遍历数据集的次数
 BATCH_SIZE = 120  # 批处理尺寸(batch_size)
 LR = 0.001  # 学习率
 
+normalize = transforms.Normalize(
+    mean=[0.4914, 0.4822, 0.4465],
+    std=[0.2023, 0.1994, 0.2010]
+)
+# 准备数据集并预处理
+transform_train = transforms.Compose([
+    # 训练集上做数据增强
+    transforms.RandomCrop(32, padding=4),  # 先四周填充0，在把图像随机裁剪成32*32
+    transforms.RandomHorizontalFlip(),  # 图像一半的概率翻转，一半的概率不翻转
+    transforms.ToTensor(),
+    normalize,
+])
+transform_test = transforms.Compose([
+    transforms.ToTensor(),
+    normalize,
+])
+
 # 读取数据
-train_list, test_list = read_clean_list('../Datasets/CIFAR-10/clean_label.txt', 0.8)
+cltrain_list, cltest_list = read_list('../Datasets/CIFAR-10/clean_label.txt', 50000)
+cltrain_data = TrainSet(data_list=cltrain_list, image_dir='../Datasets/CIFAR-10/clean/', transform=transform_train)
+cltest_data = TrainSet(data_list=cltest_list, image_dir='../Datasets/CIFAR-10/clean/', transform=transform_test)
+cltrain_loader = DataLoader(cltrain_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
+cltest_loader = DataLoader(cltest_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
+
+# 对抗样本训练集和测试集
+advtrain_list, advtest_list = read_list('../Datasets/CIFAR-10/clean_label.txt', 50000)
+advtrain_data = TrainSet(data_list=advtrain_list, image_dir='../Datasets/gen_adv/fgsm_0.15/', transform=transform_train)
+advtest_data = TrainSet(data_list=advtest_list, image_dir='../Datasets/gen_adv/fgsm_0.15/', transform=transform_test)
+advtrain_loader = DataLoader(advtrain_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
+advtest_loader = DataLoader(advtest_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
+
+# 对抗样本验证集
 adv_list = read_list('../Datasets/CIFAR-10/adv.txt')
-# clean和adv 简单混合
-# train_list = train_list + adv_list
-train_data = TrainSet(data_list=train_list, image_dir='../Datasets/CIFAR-10/clean/')
-test_data = TrainSet(data_list=test_list, image_dir='../Datasets/CIFAR-10/clean/')
-adv_data = TrainSet(data_list=adv_list, image_dir='../Datasets/CIFAR-10/clean/')
-train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
-test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
+adv_data = TrainSet(data_list=adv_list, image_dir='../Datasets/CIFAR-10/adv/')
 adv_loader = DataLoader(adv_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
 # Cifar-10的标签
@@ -68,17 +94,17 @@ if __name__ == "__main__":
                 sum_loss = 0.0
                 correct = 0.0
                 total = 0.0
-                for i, data in enumerate(train_loader, 0):
+                for i, data in enumerate(cltrain_loader, 0):
                     # 准备数据
-                    length = len(train_loader)
+                    length = len(cltrain_loader)
                     inputs, labels = data
                     inputs, labels = inputs.to(device), labels.to(device)
 
                     # 加FGSM攻击
-                    inputs = fgsm_attack(net, device, inputs, labels, 0.3)
+                    inputs = fgsm_attack(net, device, inputs, labels, 0.15)
 
                     # pdg攻击
-                    # inputs = pgd_attack(net, device, inputs, labels, 0.3, 2/255, 10)
+                    # inputs = pgd_attack(net, device, inputs, labels)
 
                     optimizer.zero_grad()
 
@@ -105,7 +131,7 @@ if __name__ == "__main__":
                 # 每训练完一个epoch测试一下准确率
                 print("Waiting Test!")
                 with torch.no_grad():
-                    clean_acc = eval_acc(test_loader, net, device)
+                    clean_acc = eval_acc(cltest_loader, net, device)
                     print('测试Clean分类准确率为：%.3f%%' % clean_acc)
                     adv_acc = eval_acc(adv_loader, net, device)
                     print('测试Adv分类准确率为：%.3f%%' % adv_acc)

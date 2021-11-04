@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 
-def fgsm_attack(model, device, images, labels, eps=0.3):
+def fgsm_attack(model, device, images, labels, eps=0.01):
     images = images.to(device)
     labels = labels.to(device)
     loss = nn.CrossEntropyLoss()

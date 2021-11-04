@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 
-def pgd_attack(model, device, images, labels, eps=0.3, alpha=2/255, iters=40):
+def pgd_attack(model, device, images, labels, eps=0.1, alpha=0.01, iters=15):
     images = images.to(device)
     labels = labels.to(device)
     loss = nn.CrossEntropyLoss()

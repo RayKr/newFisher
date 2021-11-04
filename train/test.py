@@ -4,18 +4,18 @@ from torch.utils.data import DataLoader
 from attack.fgsm import fgsm_attack
 from model.ResNet import resnet20_cifar
 from eval import eval_acc
-from utils.file import read_list, TrainSet, read_clean_list
+from utils.file import read_list, TrainSet
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # 获取数据
-_, test_list = read_clean_list(filename='../Datasets/CIFAR-10/clean_label.txt', rate=0.9)
+_, test_list = read_list('../Datasets/CIFAR-10/clean_label.txt', 50000)
 test_data = TrainSet(data_list=test_list, image_dir='../Datasets/CIFAR-10/clean/')
-test_loader = DataLoader(test_data, batch_size=1, shuffle=False, num_workers=2)
+test_loader = DataLoader(test_data, batch_size=120, shuffle=False, num_workers=2)
 
 adv_list = read_list('../Datasets/CIFAR-10/adv.txt')
-adv_data = TrainSet(data_list=adv_list, image_dir='../Datasets/CIFAR-10/clean/')
-adv_loader = DataLoader(adv_data, batch_size=1, shuffle=False, num_workers=2)
+adv_data = TrainSet(data_list=adv_list, image_dir='../Datasets/CIFAR-10/adv/')
+adv_loader = DataLoader(adv_data, batch_size=120, shuffle=False, num_workers=2)
 
 
 def do_test(epoch=1, desc=None):
