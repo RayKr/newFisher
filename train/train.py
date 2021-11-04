@@ -7,6 +7,7 @@ import os
 from torch.utils.data import DataLoader
 from attack.fgm import FGM
 from attack.fgsm import fgsm_attack
+from attack.pgd import pgd_attack
 from model.ResNet import resnet20_cifar, resnet32_cifar
 from eval import eval_acc
 from utils.file import read_clean_list, TrainSet, read_list
@@ -21,10 +22,10 @@ parser.add_argument('--outf', default='./net/', help='folder to output images an
 args = parser.parse_args()
 
 # 超参数设置
-EPOCH = 135  # 遍历数据集次数
-pre_epoch = 0  # 定义已经遍历数据集的次数
+EPOCH = 145  # 遍历数据集次数
+pre_epoch = 134  # 定义已经遍历数据集的次数
 BATCH_SIZE = 120  # 批处理尺寸(batch_size)
-LR = 0.01  # 学习率
+LR = 0.001  # 学习率
 
 # 读取数据
 train_list, test_list = read_clean_list('../Datasets/CIFAR-10/clean_label.txt', 0.8)
@@ -44,13 +45,11 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship'
 # 模型定义-ResNet
 net = resnet20_cifar().to(device)
 
-
 # 定义损失函数和优化方式
 # 损失函数为交叉熵，多用于多分类问题
 criterion = nn.CrossEntropyLoss()
 # 优化方式为mini-batch momentum-SGD，并采用L2正则化（权重衰减）
 optimizer = optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=5e-4)
-
 
 # 训练
 if __name__ == "__main__":
@@ -62,7 +61,7 @@ if __name__ == "__main__":
         with open("log.txt", "w") as f2:
             # 如果pre_epoch不为0，则判断时手动调参后，继续训练，所以需要读取上次保存的模型参数
             if pre_epoch != 0:
-                net.load_state_dict(torch.load('./net/net_%03d.pth' % (pre_epoch + 1)))
+                net.load_state_dict(torch.load('./net/net_%03d.pth' % pre_epoch))
             for epoch in range(pre_epoch, EPOCH):
                 print('\nEpoch: %d' % (epoch + 1))
                 net.train()
@@ -74,19 +73,19 @@ if __name__ == "__main__":
                     length = len(train_loader)
                     inputs, labels = data
                     inputs, labels = inputs.to(device), labels.to(device)
-                    inputs.requires_grad = True
+
+                    # 加FGSM攻击
+                    inputs = fgsm_attack(net, device, inputs, labels, 0.3)
+
+                    # pdg攻击
+                    # inputs = pgd_attack(net, device, inputs, labels, 0.3, 2/255, 10)
+
                     optimizer.zero_grad()
 
                     # 正常训练
                     outputs = net(inputs)
-                    loss = criterion(outputs, labels)   # 计算前向loss
-                    loss.backward()     # 反向传播计算梯度，注意先不要更新梯度，即optimizer.step()
-
-                    # 对抗训练
-                    adv_x = fgsm_attack(inputs, 0.25, inputs.grad)
-                    adv_y = net(adv_x)
-                    loss = criterion(adv_y, labels)
-                    loss.backward()
+                    loss = criterion(outputs, labels)  # 计算前向loss
+                    loss.backward()  # 反向传播计算梯度，注意先不要更新梯度，即optimizer.step()
 
                     # 梯度下降
                     optimizer.step()
