@@ -62,6 +62,7 @@ adv_loader = DataLoader(adv_data, batch_size=BATCH_SIZE, shuffle=False, num_work
 
 # Cifar-10的标签
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+a       = (0,        1,        2,    3,     4,      5,     6,      7,       8,        9  )
 
 # 模型定义-ResNet
 net = resnet20_cifar().to(device)

@@ -51,6 +51,14 @@ def read_list(filename, count=None, shuffle=True):
         return result
 
 
+def read_images(path):
+    list = []
+    files = os.listdir(path)
+    files.sort(key=lambda x: int(x[:-4]))  # 倒着数第四位'.'为分界线，按照‘.’左边的数字从小到大排序
+    for index, item in enumerate(files):
+        list.append((item, index))
+    return list
+
 
 class TrainSet(Dataset):
     def __init__(self, data_list=None, image_dir=None, transform=None):

@@ -30,7 +30,7 @@ def do_test(filename, desc=None):
 
     if desc is not None:
         print(desc)
-    clean_acc = eval_acc(test_loader, net, device)
+    clean_acc = eval_acc(test_loader, net, device, fgsm_attack, 0.2)
     # print('Adversarial Attack: FGSM, epsilon=0.2')
     print('Clean Examples Acc = %.3f%%' % clean_acc)
     adt_acc = eval_acc(adt_loader, net, device)
