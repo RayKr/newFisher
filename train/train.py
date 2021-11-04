@@ -24,7 +24,7 @@ args = parser.parse_args()
 
 # 超参数设置
 EPOCH = 160  # 遍历数据集次数
-pre_epoch = 147  # 定义已经遍历数据集的次数
+pre_epoch = 0  # 定义已经遍历数据集的次数
 BATCH_SIZE = 128  # 批处理尺寸(batch_size)
 LR = 0.0001  # 学习率
 
@@ -62,7 +62,6 @@ adv_loader = DataLoader(adv_data, batch_size=BATCH_SIZE, shuffle=False, num_work
 
 # Cifar-10的标签
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-a       = (0,        1,        2,    3,     4,      5,     6,      7,       8,        9  )
 
 # 模型定义-ResNet
 net = resnet20_cifar().to(device)
@@ -74,14 +73,14 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=5e-4)
 
 # 训练
-train_set = adv_train_loader
+train_set = cl_train_loader
 test_set = adv_test_loader
 adv_set = adv_loader
 if __name__ == "__main__":
     if not os.path.exists(args.outf):
         os.makedirs(args.outf)
     best_acc = 85  # 2 初始化best test accuracy
-    print("Start Training, Resnet-18!")  # 定义遍历数据集的次数
+    print("Start Training, Resnet!")  # 定义遍历数据集的次数
     with open("acc.txt", "w") as f:
         with open("log.txt", "w") as f2:
             # 如果pre_epoch不为0，则判断时手动调参后，继续训练，所以需要读取上次保存的模型参数
@@ -100,7 +99,7 @@ if __name__ == "__main__":
                     inputs, labels = inputs.to(device), labels.to(device)
 
                     # 加FGSM攻击
-                    # inputs = fgsm_attack(net, device, inputs, labels, 0.15)
+                    inputs = fgsm_attack(net, device, inputs, labels, 0.03)
 
                     # pdg攻击
                     # inputs = pgd_attack(net, device, inputs, labels)
@@ -131,9 +130,9 @@ if __name__ == "__main__":
                 print("Waiting Test!")
                 with torch.no_grad():
                     clean_acc = eval_acc(test_set, net, device)
-                    print('测试Clean分类准确率为：%.3f%%' % clean_acc)
+                    print('生成对抗样本 分类准确率为：%.3f%%' % clean_acc)
                     adv_acc = eval_acc(adv_set, net, device)
-                    print('测试Adv分类准确率为：%.3f%%' % adv_acc)
+                    print('Adv测试集 分类准确率为：%.3f%%' % adv_acc)
                     f.write("EPOCH=%03d, Accuracy=%.3f%%, Adv_Accuracy=%.3f%%" % (epoch + 1, clean_acc, adv_acc))
                     f.write('\n')
                     f.flush()
