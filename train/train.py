@@ -26,7 +26,7 @@ args = parser.parse_args()
 EPOCH = 160  # 遍历数据集次数
 pre_epoch = 0  # 定义已经遍历数据集的次数
 BATCH_SIZE = 128  # 批处理尺寸(batch_size)
-LR = 0.0001  # 学习率
+LR = 0.01  # 学习率
 
 normalize = transforms.Normalize(
     mean=[0.4914, 0.4822, 0.4465],
