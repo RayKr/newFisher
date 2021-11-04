@@ -7,7 +7,6 @@ import os
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
 
-from attack.fgm import FGM
 from attack.fgsm import fgsm_attack
 from attack.pgd import pgd_attack
 from model.ResNet import resnet20_cifar, resnet32_cifar
@@ -20,13 +19,13 @@ print('current device=', device)
 
 # 参数设置,使得我们能够手动输入命令行参数，就是让风格变得和Linux命令行差不多
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
-parser.add_argument('--outf', default='./net/', help='folder to output images and model checkpoints')  # 输出结果保存路径
+parser.add_argument('--outf', default='./tmp/', help='folder to output images and model checkpoints')  # 输出结果保存路径
 args = parser.parse_args()
 
 # 超参数设置
-EPOCH = 200  # 遍历数据集次数
-pre_epoch = 156  # 定义已经遍历数据集的次数
-BATCH_SIZE = 120  # 批处理尺寸(batch_size)
+EPOCH = 150  # 遍历数据集次数
+pre_epoch = 0  # 定义已经遍历数据集的次数
+BATCH_SIZE = 128  # 批处理尺寸(batch_size)
 LR = 0.001  # 学习率
 
 normalize = transforms.Normalize(
@@ -41,24 +40,20 @@ transform_train = transforms.Compose([
     transforms.ToTensor(),
     normalize,
 ])
-transform_test = transforms.Compose([
-    transforms.ToTensor(),
-    normalize,
-])
 
 # 读取数据
-cltrain_list, cltest_list = read_list('../Datasets/CIFAR-10/clean_label.txt', 50000)
-cltrain_data = TrainSet(data_list=cltrain_list, image_dir='../Datasets/CIFAR-10/clean/', transform=transform_train)
-cltest_data = TrainSet(data_list=cltest_list, image_dir='../Datasets/CIFAR-10/clean/', transform=transform_test)
-cltrain_loader = DataLoader(cltrain_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
-cltest_loader = DataLoader(cltest_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
+cl_train_list, cl_test_list = read_list('../Datasets/CIFAR-10/clean_label.txt', 50000)
+cl_train_data = TrainSet(data_list=cl_train_list, image_dir='../Datasets/CIFAR-10/clean/', transform=transform_train)
+cl_test_data = TrainSet(data_list=cl_test_list, image_dir='../Datasets/CIFAR-10/clean/')
+cl_train_loader = DataLoader(cl_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
+cl_test_loader = DataLoader(cl_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
 # 对抗样本训练集和测试集
-advtrain_list, advtest_list = read_list('../Datasets/CIFAR-10/clean_label.txt', 50000)
-advtrain_data = TrainSet(data_list=advtrain_list, image_dir='../Datasets/gen_adv/fgsm_0.15/', transform=transform_train)
-advtest_data = TrainSet(data_list=advtest_list, image_dir='../Datasets/gen_adv/fgsm_0.15/', transform=transform_test)
-advtrain_loader = DataLoader(advtrain_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
-advtest_loader = DataLoader(advtest_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
+adv_train_list, adv_test_list = read_list('../Datasets/CIFAR-10/clean_label.txt', 50000)
+adv_train_data = TrainSet(data_list=adv_train_list, image_dir='../Datasets/gen_adv/fgsm_0.15/', transform=transform_train)
+adv_test_data = TrainSet(data_list=adv_test_list, image_dir='../Datasets/gen_adv/fgsm_0.15/')
+adv_train_loader = DataLoader(adv_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
+adv_test_loader = DataLoader(adv_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
 # 对抗样本验证集
 adv_list = read_list('../Datasets/CIFAR-10/adv.txt')
@@ -78,6 +73,9 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=5e-4)
 
 # 训练
+train_set = adv_train_loader
+test_set = adv_test_loader
+adv_set = adv_loader
 if __name__ == "__main__":
     if not os.path.exists(args.outf):
         os.makedirs(args.outf)
@@ -87,21 +85,21 @@ if __name__ == "__main__":
         with open("log.txt", "w") as f2:
             # 如果pre_epoch不为0，则判断时手动调参后，继续训练，所以需要读取上次保存的模型参数
             if pre_epoch != 0:
-                net.load_state_dict(torch.load('./net/net_%03d.pth' % pre_epoch))
+                net.load_state_dict(torch.load('./tmp/net_%03d.pth' % pre_epoch))
             for epoch in range(pre_epoch, EPOCH):
                 print('\nEpoch: %d' % (epoch + 1))
                 net.train()
                 sum_loss = 0.0
                 correct = 0.0
                 total = 0.0
-                for i, data in enumerate(cltrain_loader, 0):
+                for i, data in enumerate(train_set, 0):
                     # 准备数据
-                    length = len(cltrain_loader)
+                    length = len(train_set)
                     inputs, labels = data
                     inputs, labels = inputs.to(device), labels.to(device)
 
                     # 加FGSM攻击
-                    inputs = fgsm_attack(net, device, inputs, labels, 0.15)
+                    # inputs = fgsm_attack(net, device, inputs, labels, 0.15)
 
                     # pdg攻击
                     # inputs = pgd_attack(net, device, inputs, labels)
@@ -131,9 +129,9 @@ if __name__ == "__main__":
                 # 每训练完一个epoch测试一下准确率
                 print("Waiting Test!")
                 with torch.no_grad():
-                    clean_acc = eval_acc(cltest_loader, net, device)
+                    clean_acc = eval_acc(test_set, net, device)
                     print('测试Clean分类准确率为：%.3f%%' % clean_acc)
-                    adv_acc = eval_acc(adv_loader, net, device)
+                    adv_acc = eval_acc(adv_set, net, device)
                     print('测试Adv分类准确率为：%.3f%%' % adv_acc)
                     f.write("EPOCH=%03d, Accuracy=%.3f%%, Adv_Accuracy=%.3f%%" % (epoch + 1, clean_acc, adv_acc))
                     f.write('\n')

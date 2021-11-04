@@ -5,8 +5,13 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 
+normalize = transforms.Normalize(
+    mean=[0.4914, 0.4822, 0.4465],
+    std=[0.2023, 0.1994, 0.2010]
+)
 transform_default = transforms.Compose([
-    transforms.ToTensor()
+    transforms.ToTensor(),
+    normalize
 ])
 
 
