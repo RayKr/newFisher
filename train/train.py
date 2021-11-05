@@ -49,11 +49,11 @@ cl_train_loader = DataLoader(cl_train_data, batch_size=BATCH_SIZE, shuffle=True,
 cl_test_loader = DataLoader(cl_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
 # 对抗样本训练集和测试集
-adv_train_list, adv_test_list = read_list('../Datasets/CIFAR-10/clean_label.txt', 50000)
-adv_train_data = TrainSet(data_list=adv_train_list, image_dir='../Datasets/gen_adv/fgsm_0.15/', transform=transform_train)
-adv_test_data = TrainSet(data_list=adv_test_list, image_dir='../Datasets/gen_adv/fgsm_0.15/')
-adv_train_loader = DataLoader(adv_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
-adv_test_loader = DataLoader(adv_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
+# adv_train_list, adv_test_list = read_list('../Datasets/CIFAR-10/clean_label.txt', 50000)
+# adv_train_data = TrainSet(data_list=adv_train_list, image_dir='../Datasets/gen_adv/fgsm_0.15/', transform=transform_train)
+# adv_test_data = TrainSet(data_list=adv_test_list, image_dir='../Datasets/gen_adv/fgsm_0.15/')
+# adv_train_loader = DataLoader(adv_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
+# adv_test_loader = DataLoader(adv_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
 # 对抗样本验证集
 adv_list = read_list('../Datasets/CIFAR-10/adv.txt')
@@ -74,7 +74,7 @@ optimizer = optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=5e-4)
 
 # 训练
 train_set = cl_train_loader
-test_set = adv_test_loader
+test_set = cl_test_loader
 adv_set = adv_loader
 if __name__ == "__main__":
     if not os.path.exists(args.outf):
@@ -99,7 +99,7 @@ if __name__ == "__main__":
                     inputs, labels = inputs.to(device), labels.to(device)
 
                     # 加FGSM攻击
-                    inputs = fgsm_attack(net, device, inputs, labels, 0.03)
+                    # inputs = fgsm_attack(net, device, inputs, labels, 0.03)
 
                     # pdg攻击
                     # inputs = pgd_attack(net, device, inputs, labels)
@@ -130,7 +130,7 @@ if __name__ == "__main__":
                 print("Waiting Test!")
                 with torch.no_grad():
                     clean_acc = eval_acc(test_set, net, device)
-                    print('生成对抗样本 分类准确率为：%.3f%%' % clean_acc)
+                    print('Clean测试集 分类准确率为：%.3f%%' % clean_acc)
                     adv_acc = eval_acc(adv_set, net, device)
                     print('Adv测试集 分类准确率为：%.3f%%' % adv_acc)
                     f.write("EPOCH=%03d, Accuracy=%.3f%%, Adv_Accuracy=%.3f%%" % (epoch + 1, clean_acc, adv_acc))
