@@ -10,9 +10,6 @@ from utils.file import ReadSet
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # 获取数据
-cifar_test = torchvision.datasets.CIFAR10(root='../Datasets/', train=False, download=True)
-cf_loader = DataLoader(cifar_test, batch_size=100, shuffle=False, num_workers=2)
-
 read_set = ReadSet(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/CIFAR-10/clean/', count=50000)
 test_data = read_set.get_test_set()
 test_loader = DataLoader(test_data, batch_size=100, shuffle=False, num_workers=2)

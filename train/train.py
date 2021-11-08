@@ -46,14 +46,14 @@ transform_train = transforms.Compose([
 # cifar_test = torchvision.datasets.CIFAR10(root='../Datasets/', train=False, download=True, transform=transform_train)
 # cl_train_loader = DataLoader(cifar_train, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
 # cl_test_loader = DataLoader(cifar_test, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
-read_set = ReadSet(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/CIFAR-10/clean/', count=50000, transform=transform_train)
+read_set = ReadSet(filename='../Datasets/CIFAR-10-New/clean_label.txt', image_dir='../Datasets/CIFAR-10-New/clean/', count=50000, transform=transform_train)
 cl_train_data = read_set.get_train_set()
 cl_test_data = read_set.get_test_set()
 cl_train_loader = DataLoader(cl_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
 cl_test_loader = DataLoader(cl_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
 # 对抗样本验证集
-adv_set = ReadSet(filename='../Datasets/CIFAR-10/adv.txt', image_dir='../Datasets/CIFAR-10/adv/', shuffle=False)
+adv_set = ReadSet(filename='../Datasets/CIFAR-10-New/adv.txt', image_dir='../Datasets/CIFAR-10-New/adv/', shuffle=False)
 adv_data = adv_set.get_train_set()
 adv_loader = DataLoader(adv_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
