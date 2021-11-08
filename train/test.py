@@ -10,11 +10,11 @@ from utils.file import ReadSet
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # 获取数据
-read_set = ReadSet(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/CIFAR-10/clean/', count=50000)
+read_set = ReadSet(filename='../Datasets/CIFAR-10-New/clean_label.txt', image_dir='../Datasets/CIFAR-10-New/clean/', count=50000)
 test_data = read_set.get_test_set()
 test_loader = DataLoader(test_data, batch_size=100, shuffle=False, num_workers=2)
 
-adv_set = ReadSet(filename='../Datasets/CIFAR-10/adv.txt', image_dir='../Datasets/CIFAR-10/adv/', shuffle=False)
+adv_set = ReadSet(filename='../Datasets/CIFAR-10-New/adv.txt', image_dir='../Datasets/CIFAR-10-New/adv/', shuffle=False)
 adv_data = adv_set.get_train_set()
 adv_loader = DataLoader(adv_data, batch_size=120, shuffle=False, num_workers=2)
 
@@ -39,4 +39,4 @@ def do_test(filename, desc=None):
 
 if __name__ == "__main__":
     do_test('./net/net_CIFAR_Down_clean_160.pth', '这是用CIFAR下载的数据包训练的模型')
-    do_test('./net/net_clean_136.pth', '这是用clean文件夹训练的模型')
+    do_test('./net/net_new_clean_160.pth', '这是用clean文件夹训练的模型')
