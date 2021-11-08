@@ -24,33 +24,6 @@ def default_loader(filename, transform=None):
     return img_tensor
 
 
-def read_list(filename, count=None, shuffle=True):
-    """
-    从txt文件里获取训练集和测试集
-    根据clean_label.txt的数据分布规律，可以每隔len行随机80%行作为训练集，剩下的作为测试集
-    :param shuffle: 乱序
-    :param filename: 文件名
-    :param count: 划分训练集和测试集的数据，默认80%训练集，20%测试集
-    """
-    result = []
-    with open(filename, "r") as f:
-        for line in f.readlines():
-            content = line.strip('\n').split(' ')  # 去掉列表中每一个元素的换行符，然后分割
-            name = content[0]
-            labels = int(content[1])
-            result.append((name, labels))
-    # 先打乱某一分类的样本的顺序
-    if shuffle:
-        random.shuffle(result)
-    # 再划分
-    if count:
-        train_list = result[0: count]
-        test_list = result[count: int(len(result) + 1)]
-        return train_list, test_list
-    else:
-        return result
-
-
 def read_images(path):
     list = []
     files = os.listdir(path)
@@ -58,6 +31,63 @@ def read_images(path):
     for index, item in enumerate(files):
         list.append((item, index))
     return list
+
+
+class ReadSet:
+    def __init__(self, filename, image_dir, count=None, shuffle=True, transform=None):
+        """
+        :param filename: 文件名
+        :param count: 切分训练集和测试集的数，count为训练集的样本数，默认50000
+        :param shuffle: 是否洗牌
+        """
+        self.filename = filename
+        self.image_dir = image_dir
+        self.count = count
+        self.shuffle = shuffle
+        self.transform = transform
+        self.result = [[] for _ in range(10)]
+        self.train_list = []
+        self.test_list = []
+        self.train_set = []
+        self.test_set = []
+        # 数据读取
+        self.read_list()
+
+    def read_list(self):
+        """
+        当有count时，切分后分别读取到train_list和test_list中；
+        当无count时，全部读取到train_list中
+        :return:
+        """
+        with open(self.filename, "r") as f:
+            for line in f.readlines():
+                content = line.strip('\n').split(' ')  # 去掉列表中每一个元素的换行符，然后分割
+                name = content[0]
+                labels = int(content[1])
+                self.result[labels].append((name, labels))
+        # 洗牌
+        if self.shuffle:
+            # 组内乱序
+            for i in range(0, len(self.result)):
+                random.shuffle(self.result[i])
+            # 组间乱序
+            random.shuffle(self.result)
+        # 切分
+        if self.count:
+            length = len(self.result)
+            point = int(self.count / length)  # 切分点为总数/标签数=每个标签下切分的数量
+            for i in range(0, len(self.result)):
+                self.train_list += self.result[i][0: point]
+                self.test_list += self.result[i][point:]
+        else:
+            for i in range(0, len(self.result)):
+                self.train_list += self.result[i]
+
+    def get_train_set(self):
+        return TrainSet(self.train_list, self.image_dir, self.transform)
+
+    def get_test_set(self):
+        return TrainSet(self.test_list, self.image_dir, self.transform)
 
 
 class TrainSet(Dataset):
@@ -81,3 +111,9 @@ class TrainSet(Dataset):
     def __len__(self):
         return len(self.data_list)
 
+
+if __name__ == "__main__":
+    rs = ReadSet(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/CIFAR-10/clean/', count=50000)
+    trs = rs.get_train_set()
+    tes = rs.get_test_set()
+    print(len(trs), len(tes))

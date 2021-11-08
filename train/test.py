@@ -1,24 +1,24 @@
 import torch
+import torchvision
 from torch.utils.data import DataLoader
 
 from attack.fgsm import fgsm_attack
 from model.ResNet import resnet20_cifar
 from eval import eval_acc
-from utils.file import read_list, TrainSet
+from utils.file import ReadSet
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # 获取数据
-_, test_list = read_list('../Datasets/CIFAR-10/clean_label.txt', 40000)
-test_data = TrainSet(data_list=test_list, image_dir='../Datasets/CIFAR-10/clean/')
+cifar_test = torchvision.datasets.CIFAR10(root='../Datasets/', train=False, download=True)
+cf_loader = DataLoader(cifar_test, batch_size=100, shuffle=False, num_workers=2)
+
+read_set = ReadSet(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/CIFAR-10/clean/', count=50000)
+test_data = read_set.get_test_set()
 test_loader = DataLoader(test_data, batch_size=100, shuffle=False, num_workers=2)
 
-_, adt_list = read_list('../Datasets/CIFAR-10/clean_label.txt', 40000)
-adt_data = TrainSet(data_list=test_list, image_dir='../Datasets/gen_adv/fgsm_0.03/')
-adt_loader = DataLoader(adt_data, batch_size=120, shuffle=False, num_workers=2)
-#
-adv_list = read_list('../Datasets/CIFAR-10/adv.txt')
-adv_data = TrainSet(data_list=adv_list, image_dir='../Datasets/CIFAR-10/adv/')
+adv_set = ReadSet(filename='../Datasets/CIFAR-10/adv.txt', image_dir='../Datasets/CIFAR-10/adv/', shuffle=False)
+adv_data = adv_set.get_train_set()
 adv_loader = DataLoader(adv_data, batch_size=120, shuffle=False, num_workers=2)
 
 
@@ -34,13 +34,12 @@ def do_test(filename, desc=None):
     # clean_acc = eval_acc(test_loader, net, device, fgsm_attack, 0.03)
     # print('Adversarial Attack: FGSM, epsilon=0.2')
     print('Clean Examples Acc = %.3f%%' % clean_acc)
-    adt_acc = eval_acc(adt_loader, net, device)
-    print('Generated FGSM Adversarial Examples Acc = %.3f%%' % adt_acc)
+    # adt_acc = eval_acc(adt_loader, net, device)
+    # print('Generated FGSM Adversarial Examples Acc = %.3f%%' % adt_acc)
     adv_acc = eval_acc(adv_loader, net, device)
     print('Adv Examples Acc = %.3f%%' % adv_acc)
 
 
 if __name__ == "__main__":
-    # do_test(135, 'clean测试集上的模型直接预测对抗样本（未进行对抗训练）')
-    do_test('./net/net_clean_fgsm_160.pth')
-    # do_test(135, 'clean和adv进行简单混合，clean是总样本的50%（未进行对抗训练）')
+    do_test('./net/net_CIFAR_Down_clean_160.pth', '这是用CIFAR下载的数据包训练的模型')
+    do_test('./net/net_clean_136.pth', '这是用clean文件夹训练的模型')

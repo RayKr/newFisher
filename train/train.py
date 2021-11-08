@@ -1,17 +1,17 @@
-import torch
-import torch.nn as nn
-import torch.optim as optim
 import argparse
 import os
 
+import torch
+import torch.nn as nn
+import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
 
 from attack.fgsm import fgsm_attack
 from attack.pgd import pgd_attack
-from model.ResNet import resnet20_cifar, resnet32_cifar
 from eval import eval_acc
-from utils.file import TrainSet, read_list
+from model.ResNet import resnet20_cifar
+from utils.file import ReadSet
 
 # 定义是否使用GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -42,22 +42,19 @@ transform_train = transforms.Compose([
 ])
 
 # 读取数据
-cl_train_list, cl_test_list = read_list('../Datasets/CIFAR-10/clean_label.txt', 50000)
-cl_train_data = TrainSet(data_list=cl_train_list, image_dir='../Datasets/CIFAR-10/clean/', transform=transform_train)
-cl_test_data = TrainSet(data_list=cl_test_list, image_dir='../Datasets/CIFAR-10/clean/')
+# cifar_train = torchvision.datasets.CIFAR10(root='../Datasets/', train=True, download=True, transform=transform_train)
+# cifar_test = torchvision.datasets.CIFAR10(root='../Datasets/', train=False, download=True, transform=transform_train)
+# cl_train_loader = DataLoader(cifar_train, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
+# cl_test_loader = DataLoader(cifar_test, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
+read_set = ReadSet(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/CIFAR-10/clean/', count=50000, transform=transform_train)
+cl_train_data = read_set.get_train_set()
+cl_test_data = read_set.get_test_set()
 cl_train_loader = DataLoader(cl_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
 cl_test_loader = DataLoader(cl_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
-# 对抗样本训练集和测试集
-# adv_train_list, adv_test_list = read_list('../Datasets/CIFAR-10/clean_label.txt', 50000)
-# adv_train_data = TrainSet(data_list=adv_train_list, image_dir='../Datasets/gen_adv/fgsm_0.15/', transform=transform_train)
-# adv_test_data = TrainSet(data_list=adv_test_list, image_dir='../Datasets/gen_adv/fgsm_0.15/')
-# adv_train_loader = DataLoader(adv_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
-# adv_test_loader = DataLoader(adv_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
-
 # 对抗样本验证集
-adv_list = read_list('../Datasets/CIFAR-10/adv.txt')
-adv_data = TrainSet(data_list=adv_list, image_dir='../Datasets/CIFAR-10/adv/')
+adv_set = ReadSet(filename='../Datasets/CIFAR-10/adv.txt', image_dir='../Datasets/CIFAR-10/adv/', shuffle=False)
+adv_data = adv_set.get_train_set()
 adv_loader = DataLoader(adv_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
 # Cifar-10的标签
