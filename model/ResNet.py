@@ -9,6 +9,9 @@ import torch
 import torch.nn as nn
 import math
 
+# pooling = nn.SiLU(inplace=True)
+pooling = nn.ReLU(inplace=True)
+
 
 def conv3x3(in_planes, out_planes, stride=1):
     """ 3x3 convolution with padding """
@@ -22,7 +25,7 @@ class BasicBlock(nn.Module):
         super(BasicBlock, self).__init__()
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = pooling
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = nn.BatchNorm2d(planes)
         self.downsample = downsample
@@ -58,7 +61,7 @@ class Bottleneck(nn.Module):
         self.bn2 = nn.BatchNorm2d(planes)
         self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm2d(planes * 4)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = pooling
         self.downsample = downsample
         self.stride = stride
 
@@ -91,7 +94,7 @@ class PreActBasicBlock(nn.Module):
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super(PreActBasicBlock, self).__init__()
         self.bn1 = nn.BatchNorm2d(inplanes)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = pooling
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn2 = nn.BatchNorm2d(planes)
         self.conv2 = conv3x3(planes, planes)
@@ -124,7 +127,7 @@ class PreActBottleneck(nn.Module):
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super(PreActBottleneck, self).__init__()
         self.bn1 = nn.BatchNorm2d(inplanes)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = pooling
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
         self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
@@ -164,7 +167,7 @@ class ResNet_Cifar(nn.Module):
         self.inplanes = 16
         self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(16)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = pooling
         self.layer1 = self._make_layer(block, 16, layers[0])
         self.layer2 = self._make_layer(block, 32, layers[1], stride=2)
         self.layer3 = self._make_layer(block, 64, layers[2], stride=2)
@@ -221,7 +224,7 @@ class PreAct_ResNet_Cifar(nn.Module):
         self.layer2 = self._make_layer(block, 32, layers[1], stride=2)
         self.layer3 = self._make_layer(block, 64, layers[2], stride=2)
         self.bn = nn.BatchNorm2d(64 * block.expansion)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = pooling
         self.avgpool = nn.AvgPool2d(8, stride=1)
         self.fc = nn.Linear(64 * block.expansion, num_classes)
 

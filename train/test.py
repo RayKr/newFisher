@@ -40,3 +40,5 @@ def do_test(filename, desc=None):
 if __name__ == "__main__":
     do_test('./net/net_CIFAR_Down_clean_160.pth', '这是用CIFAR下载的数据包训练的模型')
     do_test('./net/net_new_clean_160.pth', '这是用clean文件夹训练的模型')
+    do_test('./net/net_clean_fgsm_082.pth', '这是用clean+fgsm训练的模型')
+    do_test('./net/silu/net_clean_silu_72.pth', '这是用silu训练的模型')

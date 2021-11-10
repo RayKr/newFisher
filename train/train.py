@@ -4,13 +4,14 @@ import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torchvision
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
 
 from attack.fgsm import fgsm_attack
 from attack.pgd import pgd_attack
 from eval import eval_acc
-from model.ResNet import resnet20_cifar
+from model.ResNet import resnet20_cifar, preact_resnet1001_cifar, resnet32_cifar
 from utils.file import ReadSet
 
 # 定义是否使用GPU
@@ -23,10 +24,11 @@ parser.add_argument('--outf', default='./tmp/', help='folder to output images an
 args = parser.parse_args()
 
 # 超参数设置
+conf = [(10, 0.01), (80, 0.001)]
 EPOCH = 160  # 遍历数据集次数
 pre_epoch = 0  # 定义已经遍历数据集的次数
 BATCH_SIZE = 128  # 批处理尺寸(batch_size)
-LR = 0.01  # 学习率
+LR = 0.001  # 学习率
 
 normalize = transforms.Normalize(
     mean=[0.4914, 0.4822, 0.4465],
@@ -52,6 +54,20 @@ cl_test_data = read_set.get_test_set()
 cl_train_loader = DataLoader(cl_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
 cl_test_loader = DataLoader(cl_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
+# pdg生成对抗样本
+pgd_set = ReadSet(filename='../Datasets/CIFAR-10-New/clean_label.txt', image_dir='../Datasets/gen_adv/pgd/', count=50000, transform=transform_train)
+pgd_train_data = pgd_set.get_train_set()
+pgd_test_data = pgd_set.get_test_set()
+pgd_train_loader = DataLoader(pgd_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
+pgd_test_loader = DataLoader(pgd_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
+
+# fgsm生成的对抗样本
+fgsm_set = ReadSet(filename='../Datasets/CIFAR-10-New/clean_label.txt', image_dir='../Datasets/gen_adv/fgsm_0.1/', count=50000, transform=transform_train)
+fgsm_train_data = fgsm_set.get_train_set()
+fgsm_test_data = fgsm_set.get_test_set()
+fgsm_train_loader = DataLoader(fgsm_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
+fgsm_test_loader = DataLoader(fgsm_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
+
 # 对抗样本验证集
 adv_set = ReadSet(filename='../Datasets/CIFAR-10-New/adv.txt', image_dir='../Datasets/CIFAR-10-New/adv/', shuffle=False)
 adv_data = adv_set.get_train_set()
@@ -61,7 +77,7 @@ adv_loader = DataLoader(adv_data, batch_size=BATCH_SIZE, shuffle=False, num_work
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 # 模型定义-ResNet
-net = resnet20_cifar().to(device)
+net = resnet32_cifar().to(device)
 
 # 定义损失函数和优化方式
 # 损失函数为交叉熵，多用于多分类问题
@@ -70,9 +86,6 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=5e-4)
 
 # 训练
-train_set = cl_train_loader
-test_set = cl_test_loader
-adv_set = adv_loader
 if __name__ == "__main__":
     if not os.path.exists(args.outf):
         os.makedirs(args.outf)
@@ -89,16 +102,16 @@ if __name__ == "__main__":
                 sum_loss = 0.0
                 correct = 0.0
                 total = 0.0
-                for i, data in enumerate(train_set, 0):
+                for i, data in enumerate(cl_train_loader, 0):
                     # 准备数据
-                    length = len(train_set)
+                    length = len(cl_train_loader)
                     inputs, labels = data
                     inputs, labels = inputs.to(device), labels.to(device)
 
                     # 加FGSM攻击
                     # inputs = fgsm_attack(net, device, inputs, labels, 0.03)
 
-                    # pdg攻击
+                    # pgd攻击
                     # inputs = pgd_attack(net, device, inputs, labels)
 
                     optimizer.zero_grad()
@@ -126,11 +139,15 @@ if __name__ == "__main__":
                 # 每训练完一个epoch测试一下准确率
                 print("Waiting Test!")
                 with torch.no_grad():
-                    clean_acc = eval_acc(test_set, net, device)
+                    clean_acc = eval_acc(cl_test_loader, net, device)
                     print('Clean测试集 分类准确率为：%.3f%%' % clean_acc)
-                    adv_acc = eval_acc(adv_set, net, device)
+                    adv_acc = eval_acc(adv_loader, net, device)
                     print('Adv测试集 分类准确率为：%.3f%%' % adv_acc)
-                    f.write("EPOCH=%03d, Accuracy=%.3f%%, Adv_Accuracy=%.3f%%" % (epoch + 1, clean_acc, adv_acc))
+                    fgsm_acc = eval_acc(fgsm_test_loader, net, device)
+                    print('FGSM对抗样本 分类准确率为：%.3f%%' % fgsm_acc)
+                    pgd_acc = eval_acc(pgd_test_loader, net, device)
+                    print('PGD对抗样本 分类准确率为：%.3f%%' % pgd_acc)
+                    f.write("EPOCH=%03d, Accuracy=%.3f%%, Adv_Accuracy=%.3f%%, FGSM_Accuracy=%.3f%%, PGD_Accuracy=%.4f%%" % (epoch + 1, clean_acc, adv_acc, fgsm_acc, pgd_acc))
                     f.write('\n')
                     f.flush()
 
