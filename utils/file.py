@@ -1,7 +1,9 @@
 import random
 import os
+
+import cv2
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 from torch.utils.data import Dataset
 from torchvision import transforms
 
@@ -15,7 +17,17 @@ transform_default = transforms.Compose([
 ])
 
 
-def default_loader(filename, transform=None):
+# 整张图 DCT 变换
+def whole_img_dct(filename):
+    img_u8 = cv2.imread(filename, 0)
+    img_f32 = img_u8.astype(np.float)  # 数据类型转换 转换为浮点型
+    img_dct = cv2.dct(img_f32)            # 进行离散余弦变换
+    img_dct_log = np.log(abs(img_dct))    # 进行log处理
+    img_idct = cv2.idct(img_dct)          # 进行离散余弦反变换
+    return img_dct_log, img_idct
+
+
+def default_loader(filename, transform=None, dct=False):
     img_pil = Image.open(filename)
     if transform:
         img_tensor = transform(img_pil)
@@ -34,7 +46,7 @@ def read_images(path):
 
 
 class ReadSet:
-    def __init__(self, filename, image_dir, count=None, shuffle=True, transform=None):
+    def __init__(self, filename, image_dir, count=None, shuffle=True, transform=None, **kwargs):
         """
         :param filename: 文件名
         :param count: 切分训练集和测试集的数，count为训练集的样本数，默认50000
@@ -45,13 +57,19 @@ class ReadSet:
         self.count = count
         self.shuffle = shuffle
         self.transform = transform
+        # 处理自定义参数
+        self._parse_params(**kwargs)
+
+        # 数据读取
         self.result = [[] for _ in range(10)]
         self.train_list = []
         self.test_list = []
         self.train_set = []
         self.test_set = []
-        # 数据读取
         self.read_list()
+
+    def _parse_params(self, **kwargs):
+        self.dct = kwargs.get("dct", False)
 
     def read_list(self):
         """
@@ -84,14 +102,14 @@ class ReadSet:
                 self.train_list += self.result[i]
 
     def get_train_set(self):
-        return TrainSet(self.train_list, self.image_dir, self.transform)
+        return TrainSet(self.train_list, self.image_dir, self.transform, self.dct)
 
     def get_test_set(self):
-        return TrainSet(self.test_list, self.image_dir, self.transform)
+        return TrainSet(self.test_list, self.image_dir, self.transform, self.dct)
 
 
 class TrainSet(Dataset):
-    def __init__(self, data_list=None, image_dir=None, transform=None):
+    def __init__(self, data_list=None, image_dir=None, transform=None, dct=False):
         """
         :param data_list: 数据集list [['0.jpg', 0], ['1.jpg', 8]]
         :param image_dir: 图片路径：image_dir+imge_name.jpg构成图片的完整路径
@@ -100,11 +118,12 @@ class TrainSet(Dataset):
         self.data_list = data_list
         self.image_dir = image_dir
         self.transform = transform
+        self.dct = dct
 
     def __getitem__(self, idx):
         image_name, image_label = self.data_list[idx]
         image_path = os.path.join(self.image_dir, image_name)
-        image_tensor = default_loader(image_path, self.transform)
+        image_tensor = default_loader(image_path, self.transform, self.dct)
         image_label = np.array(image_label)
         return image_tensor, image_label
 

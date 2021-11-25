@@ -28,7 +28,7 @@ conf = [(10, 0.01), (80, 0.001)]
 EPOCH = 160  # 遍历数据集次数
 pre_epoch = 0  # 定义已经遍历数据集的次数
 BATCH_SIZE = 128  # 批处理尺寸(batch_size)
-LR = 0.001  # 学习率
+LR = 0.01  # 学习率
 
 normalize = transforms.Normalize(
     mean=[0.4914, 0.4822, 0.4465],
@@ -48,28 +48,28 @@ transform_train = transforms.Compose([
 # cifar_test = torchvision.datasets.CIFAR10(root='../Datasets/', train=False, download=True, transform=transform_train)
 # cl_train_loader = DataLoader(cifar_train, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
 # cl_test_loader = DataLoader(cifar_test, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
-read_set = ReadSet(filename='../Datasets/CIFAR-10-New/clean_label.txt', image_dir='../Datasets/CIFAR-10-New/clean/', count=50000, transform=transform_train)
+read_set = ReadSet(filename='../Datasets/CIFAR-10-New/clean_label.txt', image_dir='../Datasets/CIFAR-10-New/clean/', count=50000, transform=transform_train, dct=True)
 cl_train_data = read_set.get_train_set()
 cl_test_data = read_set.get_test_set()
 cl_train_loader = DataLoader(cl_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
 cl_test_loader = DataLoader(cl_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
 # pdg生成对抗样本
-pgd_set = ReadSet(filename='../Datasets/CIFAR-10-New/clean_label.txt', image_dir='../Datasets/gen_adv/pgd/', count=50000, transform=transform_train)
+pgd_set = ReadSet(filename='../Datasets/CIFAR-10-New/clean_label.txt', image_dir='../Datasets/gen_adv/pgd/', count=50000)
 pgd_train_data = pgd_set.get_train_set()
 pgd_test_data = pgd_set.get_test_set()
 pgd_train_loader = DataLoader(pgd_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
 pgd_test_loader = DataLoader(pgd_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
 # fgsm生成的对抗样本
-fgsm_set = ReadSet(filename='../Datasets/CIFAR-10-New/clean_label.txt', image_dir='../Datasets/gen_adv/fgsm_0.1/', count=50000, transform=transform_train)
+fgsm_set = ReadSet(filename='../Datasets/CIFAR-10-New/clean_label.txt', image_dir='../Datasets/gen_adv/fgsm_0.1/', count=50000)
 fgsm_train_data = fgsm_set.get_train_set()
 fgsm_test_data = fgsm_set.get_test_set()
 fgsm_train_loader = DataLoader(fgsm_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
 fgsm_test_loader = DataLoader(fgsm_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
 # 对抗样本验证集
-adv_set = ReadSet(filename='../Datasets/CIFAR-10-New/adv.txt', image_dir='../Datasets/CIFAR-10-New/adv/', shuffle=False)
+adv_set = ReadSet(filename='../Datasets/CIFAR-10-New/adv.txt', image_dir='../Datasets/CIFAR-10-New/adv/', shuffle=False, transform=transform_train)
 adv_data = adv_set.get_train_set()
 adv_loader = DataLoader(adv_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
