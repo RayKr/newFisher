@@ -29,10 +29,10 @@ def do_test(filename, desc=None):
         print(desc)
     clean_acc = eval_acc(test_loader, net, device)
     # clean_acc = eval_acc(test_loader, net, device, fgsm_attack, 0.03)
-    # print('Adversarial Attack: FGSM, epsilon=0.2')
+    print('Adversarial Attack: FGSM, epsilon=0.2')
     print('Clean Examples Acc = %.3f%%' % clean_acc)
-    # adt_acc = eval_acc(adt_loader, net, device)
-    # print('Generated FGSM Adversarial Examples Acc = %.3f%%' % adt_acc)
+    adt_acc = eval_acc(adt_loader, net, device)
+    print('Generated FGSM Adversarial Examples Acc = %.3f%%' % adt_acc)
     adv_acc = eval_acc(adv_loader, net, device)
     print('Adv Examples Acc = %.3f%%' % adv_acc)
 
