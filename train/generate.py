@@ -11,7 +11,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # 获取数据
 # 严格按顺序读取文件,因为要生成跟clean数据集原数据顺序一一对应的图片
-read_set = ReadSet(filename='../Datasets/CIFAR-10-New/clean_label.txt', image_dir='../Datasets/CIFAR-10-New/clean/', shuffle=False)
+read_set = ReadSet(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/CIFAR-10/clean_png/', shuffle=False)
 cl_train_data = read_set.get_train_set()
 sort_loader = DataLoader(cl_train_data, batch_size=100, shuffle=False, num_workers=2)
 
