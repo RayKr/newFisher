@@ -16,7 +16,7 @@ def predict(model_path, input_path, out_filename):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # 获取数据
     a_images = read_images(input_path)
-    a_data = TrainSet(data_list=a_images, image_dir=input_path)
+    a_data = TrainSet(a_images)
     a_loader = DataLoader(a_data, batch_size=1, shuffle=False, num_workers=2)
 
     # 加载模型
@@ -42,11 +42,11 @@ def predict(model_path, input_path, out_filename):
 
 if __name__ == "__main__":
     # clean+jpg的训练模型
-    # predict('./net/old/net_clean_136_jpg_best.pth', '../Datasets/predict/A', '../Datasets/predict/result/clean_jpg/A.txt')
-    # predict('./net/old/net_clean_136_jpg_best.pth', '../Datasets/predict/B', '../Datasets/predict/result/clean_jpg/B.txt')
-    # predict('./net/old/net_clean_136_jpg_best.pth', '../Datasets/predict/clean', '../Datasets/predict/result/clean_jpg/clean.txt')
+    # predict('./net/old/net_clean_136_jpg_best.pth', '../Datasets/predict/A/', '../Datasets/predict/result/clean_jpg/A.txt')
+    # predict('./net/old/net_clean_136_jpg_best.pth', '../Datasets/predict/B/', '../Datasets/predict/result/clean_jpg/B.txt')
+    # predict('./net/old/net_clean_136_jpg_best.pth', '../Datasets/predict/clean/', '../Datasets/predict/result/clean_jpg/clean.txt')
 
     # clean+png的训练模型
-    # predict('./net/net_new_clean_160.pth', '../Datasets/predict/A', '../Datasets/predict/result/clean_png/A.txt')
-    # predict('./net/net_new_clean_160.pth', '../Datasets/predict/B', '../Datasets/predict/result/clean_png/B.txt')
-    predict('./net/net_new_clean_160.pth', '../Datasets/predict/clean', '../Datasets/predict/result/clean_png/clean.txt')
+    # predict('./net/net_new_clean_160.pth', '../Datasets/predict/A/', '../Datasets/predict/result/clean_png/A.txt')
+    # predict('./net/net_new_clean_160.pth', '../Datasets/predict/B/', '../Datasets/predict/result/clean_png/B.txt')
+    predict('./net/net_new_clean_160.pth', '../Datasets/predict/clean/', '../Datasets/predict/result/clean_png/clean.txt')

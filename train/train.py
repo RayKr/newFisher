@@ -12,7 +12,8 @@ from attack.fgsm import fgsm_attack
 from attack.pgd import pgd_attack
 from eval import eval_acc
 from model.ResNet import resnet20_cifar, preact_resnet1001_cifar, resnet32_cifar
-from utils.file import ReadSet
+from utils.file import ReadSet, read_list, TrainSet
+from data import cl_test_loader, adv_loader, fgsm_test_loader, pgd_test_loader
 
 # 定义是否使用GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -43,36 +44,6 @@ transform_train = transforms.Compose([
     normalize,
 ])
 
-# 读取数据
-# cifar_train = torchvision.datasets.CIFAR10(root='../Datasets/', train=True, download=True, transform=transform_train)
-# cifar_test = torchvision.datasets.CIFAR10(root='../Datasets/', train=False, download=True, transform=transform_train)
-# cl_train_loader = DataLoader(cifar_train, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
-# cl_test_loader = DataLoader(cifar_test, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
-read_set = ReadSet(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/CIFAR-10/clean_png/', count=50000, transform=transform_train, dct=True)
-cl_train_data = read_set.get_train_set()
-cl_test_data = read_set.get_test_set()
-cl_train_loader = DataLoader(cl_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
-cl_test_loader = DataLoader(cl_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
-
-# pdg生成对抗样本
-pgd_set = ReadSet(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/gen_adv/pgd/', count=50000)
-pgd_train_data = pgd_set.get_train_set()
-pgd_test_data = pgd_set.get_test_set()
-pgd_train_loader = DataLoader(pgd_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
-pgd_test_loader = DataLoader(pgd_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
-
-# fgsm生成的对抗样本
-fgsm_set = ReadSet(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/gen_adv/fgsm_0.1/', count=50000)
-fgsm_train_data = fgsm_set.get_train_set()
-fgsm_test_data = fgsm_set.get_test_set()
-fgsm_train_loader = DataLoader(fgsm_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
-fgsm_test_loader = DataLoader(fgsm_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
-
-# 对抗样本验证集
-adv_set = ReadSet(filename='../Datasets/CIFAR-10/adv.txt', image_dir='../Datasets/CIFAR-10/adv/', shuffle=False, transform=transform_train)
-adv_data = adv_set.get_train_set()
-adv_loader = DataLoader(adv_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
-
 # Cifar-10的标签
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
@@ -85,8 +56,8 @@ criterion = nn.CrossEntropyLoss()
 # 优化方式为mini-batch momentum-SGD，并采用L2正则化（权重衰减）
 optimizer = optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=5e-4)
 
-# 训练
-if __name__ == "__main__":
+
+def train(train_set, pre_model_path=None):
     if not os.path.exists(args.outf):
         os.makedirs(args.outf)
     best_acc = 85  # 2 初始化best test accuracy
@@ -94,17 +65,17 @@ if __name__ == "__main__":
     with open("acc.txt", "w") as f:
         with open("log.txt", "w") as f2:
             # 如果pre_epoch不为0，则判断时手动调参后，继续训练，所以需要读取上次保存的模型参数
-            if pre_epoch != 0:
-                net.load_state_dict(torch.load('./tmp/net_%03d.pth' % pre_epoch))
+            if pre_model_path:
+                net.load_state_dict(torch.load(pre_model_path))
             for epoch in range(pre_epoch, EPOCH):
                 print('\nEpoch: %d' % (epoch + 1))
                 net.train()
                 sum_loss = 0.0
                 correct = 0.0
                 total = 0.0
-                for i, data in enumerate(cl_train_loader, 0):
+                for i, data in enumerate(train_set, 0):
                     # 准备数据
-                    length = len(cl_train_loader)
+                    length = len(train_set)
                     inputs, labels = data
                     inputs, labels = inputs.to(device), labels.to(device)
 
@@ -119,7 +90,7 @@ if __name__ == "__main__":
                     # 正常训练
                     outputs = net(inputs)
                     loss = criterion(outputs, labels)  # 计算前向loss
-                    loss.backward()  # 反向传播计算梯度，注意先不要更新梯度，即optimizer.step()
+                    loss.backward()  # 反向传播计算梯度
 
                     # 梯度下降
                     optimizer.step()
@@ -162,3 +133,15 @@ if __name__ == "__main__":
                         f3.close()
                         best_acc = clean_acc
             print("Training Finished, TotalEPOCH=%d" % EPOCH)
+
+
+# 训练
+if __name__ == "__main__":
+    # 混合样本
+    clean_list, _ = read_list(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/CIFAR-10/clean_png/', shuffle=True, count=50000)
+    pgd_list, _ = read_list(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/gen_adv/pgd/', shuffle=True, count=10000)
+    adv_list, _ = read_list(filename='../Datasets/CIFAR-10/adv.txt', image_dir='../Datasets/CIFAR-10/adv/')
+    mixed_list = clean_list
+    mixed_data = TrainSet(clean_list)
+    train_loader = DataLoader(mixed_data, batch_size=120, shuffle=True, num_workers=2)
+    train(train_loader)
