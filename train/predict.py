@@ -64,4 +64,4 @@ if __name__ == "__main__":
     # predict('./net/transfer_clean_adv/net_059.pth', '../Datasets/predict/A/', '../Datasets/predict/result/transfer/A.txt')
     # predict('./net/transfer_clean_adv/net_059.pth', '../Datasets/predict/B/', '../Datasets/predict/result/transfer/B.txt')
     # predict('./net/transfer_clean_adv/net_059.pth', '../Datasets/predict/clean/', '../Datasets/predict/result/transfer/clean.txt')
-    predict('./net/transfer_clean_adv/net_059.pth', '../Datasets/predict/up/', '../Datasets/predict/result/transfer/提高.txt')
+    predict('./tmp/net_170.pth', '../Datasets/predict/clean/', '../Datasets/predict/result/fgsm/clean.txt')

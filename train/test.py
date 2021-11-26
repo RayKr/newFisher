@@ -33,4 +33,6 @@ if __name__ == "__main__":
     # do_test('net/old/net_clean_136_jpg_best.pth', '这是用jpg训练的模型')
     # do_test('./net/net_new_clean_160.pth', '这是用新数据集png训练的模型')
     # do_test('./net/mixed_clean_adv/net_131.pth', '这是用干净样本训练的模型')
-    do_test('./net/transfer_clean_adv/net_040.pth', '这是用迁移训练的模型')
+    # do_test('./net/transfer_clean_adv/net_040.pth', '这是用迁移训练的模型')
+    do_test('./net/clean/net_080.pth', '这是用clean样本训练的模型')
+    do_test('./net/fgsm/net_177.pth', '这是用fgsm对抗训练的模型')

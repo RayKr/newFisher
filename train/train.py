@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+from attack.fgsm import fgsm_attack
 from data import cl_test_loader, adv_loader, fgsm_test_loader, pgd_test_loader, cl_train_loader, mixed_loader
 from eval import eval_acc
 from model.ResNet import resnet32_cifar
@@ -19,9 +20,9 @@ parser.add_argument('--outf', default='./tmp/', help='folder to output images an
 args = parser.parse_args()
 
 # 超参数设置
-EPOCH = 160  # 遍历数据集次数
+EPOCH = 200  # 遍历数据集次数
 pre_epoch = 0  # 定义已经遍历数据集的次数
-LR = 0.001  # 学习率
+LR = 0.01  # 学习率
 
 # Cifar-10的标签
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
@@ -58,20 +59,14 @@ def train(train_set, pre_model_path=None):
                     inputs, labels = data
                     inputs, labels = inputs.to(device), labels.to(device)
 
-                    # 加FGSM攻击
-                    # inputs = fgsm_attack(net, device, inputs, labels, 0.03)
+                    # fgsm_attack
+                    # inputs = fgsm_attack(net, device, criterion, inputs, labels, 0.1)
 
-                    # pgd攻击
-                    # inputs = pgd_attack(net, device, inputs, labels)
-
-                    optimizer.zero_grad()
-
-                    # 正常训练
+                    # 重新计算一遍loss
                     outputs = net(inputs)
                     loss = criterion(outputs, labels)  # 计算前向loss
-                    loss.backward()  # 反向传播计算梯度
-
-                    # 梯度下降
+                    optimizer.zero_grad()
+                    loss.backward()
                     optimizer.step()
 
                     # 每训练1个batch打印一次loss和准确率
@@ -116,4 +111,5 @@ def train(train_set, pre_model_path=None):
 
 # 训练
 if __name__ == "__main__":
-    train(mixed_loader, pre_model_path='./net/transfer_clean_adv/net_040.pth')
+    # train(mixed_loader, pre_model_path='./net/transfer_clean_adv/net_040.pth')
+    train(cl_train_loader)
