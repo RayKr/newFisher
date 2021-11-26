@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 from attack.fgsm import fgsm_attack
+from attack.pgd import pgd_attack
 from data import cl_test_loader, adv_loader, fgsm_test_loader, pgd_test_loader, cl_train_loader, mixed_loader
 from eval import eval_acc
 from model.ResNet import resnet32_cifar
@@ -20,7 +21,7 @@ parser.add_argument('--outf', default='./tmp/', help='folder to output images an
 args = parser.parse_args()
 
 # 超参数设置
-EPOCH = 200  # 遍历数据集次数
+EPOCH = 100  # 遍历数据集次数
 pre_epoch = 0  # 定义已经遍历数据集的次数
 LR = 0.01  # 学习率
 
@@ -61,6 +62,9 @@ def train(train_set, pre_model_path=None):
 
                     # fgsm_attack
                     # inputs = fgsm_attack(net, device, criterion, inputs, labels, 0.1)
+
+                    # pgd_attack
+                    inputs = pgd_attack(net, device, criterion, inputs, labels)
 
                     # 重新计算一遍loss
                     outputs = net(inputs)
