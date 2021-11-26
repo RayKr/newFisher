@@ -18,7 +18,7 @@ def fgsm_attack(model, device, images, labels, eps=0.01):
     # 使用sign（符号）函数，将对x求了偏导的梯度进行符号化
     adv_images = images + eps * grad.sign()
     # 做一个剪裁的工作，将torch.clamp内部大于1的数值变为1，小于0的数值等于0，防止image越界
-    adv_images = torch.clamp(adv_images, -eps, eps)
+    adv_images = torch.clamp(adv_images, 0, 1)
 
     return adv_images
 

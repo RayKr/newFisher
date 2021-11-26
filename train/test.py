@@ -1,6 +1,7 @@
 import torch
 
-from model.ResNet import resnet20_cifar
+from attack.fgsm import fgsm_attack
+from model.ResNet import resnet20_cifar, resnet32_cifar
 from eval import eval_acc
 from data import cl_test_loader, adv_loader, fgsm_test_loader, pgd_test_loader
 
@@ -8,7 +9,7 @@ from data import cl_test_loader, adv_loader, fgsm_test_loader, pgd_test_loader
 def do_test(filename, desc=None):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # 加载模型
-    net = resnet20_cifar().to(device)
+    net = resnet32_cifar().to(device)
     net.load_state_dict(torch.load(filename))
     net.eval()
 
@@ -30,4 +31,6 @@ if __name__ == "__main__":
     # do_test('./net/net_clean_fgsm_082.pth', '这是用clean+fgsm训练的模型')
     # do_test('./net/silu/net_clean_silu_72.pth', '这是用silu训练的模型')
     # do_test('net/old/net_clean_136_jpg_best.pth', '这是用jpg训练的模型')
-    do_test('net/net_new_clean_160.pth', '这是用新数据集png训练的模型')
+    # do_test('./net/net_new_clean_160.pth', '这是用新数据集png训练的模型')
+    # do_test('./net/mixed_clean_adv/net_131.pth', '这是用干净样本训练的模型')
+    do_test('./net/transfer_clean_adv/net_040.pth', '这是用迁移训练的模型')

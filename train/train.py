@@ -4,16 +4,10 @@ import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torchvision
-from torch.utils.data import DataLoader
-from torchvision.transforms import transforms
 
-from attack.fgsm import fgsm_attack
-from attack.pgd import pgd_attack
+from data import cl_test_loader, adv_loader, fgsm_test_loader, pgd_test_loader, cl_train_loader, mixed_loader
 from eval import eval_acc
-from model.ResNet import resnet20_cifar, preact_resnet1001_cifar, resnet32_cifar
-from utils.file import ReadSet, read_list, TrainSet
-from data import cl_test_loader, adv_loader, fgsm_test_loader, pgd_test_loader
+from model.ResNet import resnet32_cifar
 
 # 定义是否使用GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -25,24 +19,9 @@ parser.add_argument('--outf', default='./tmp/', help='folder to output images an
 args = parser.parse_args()
 
 # 超参数设置
-conf = [(10, 0.01), (80, 0.001)]
 EPOCH = 160  # 遍历数据集次数
 pre_epoch = 0  # 定义已经遍历数据集的次数
-BATCH_SIZE = 128  # 批处理尺寸(batch_size)
-LR = 0.01  # 学习率
-
-normalize = transforms.Normalize(
-    mean=[0.4914, 0.4822, 0.4465],
-    std=[0.2023, 0.1994, 0.2010]
-)
-# 准备数据集并预处理
-transform_train = transforms.Compose([
-    # 训练集上做数据增强
-    transforms.RandomCrop(32, padding=4),  # 先四周填充0，在把图像随机裁剪成32*32
-    transforms.RandomHorizontalFlip(),  # 图像一半的概率翻转，一半的概率不翻转
-    transforms.ToTensor(),
-    normalize,
-])
+LR = 0.001  # 学习率
 
 # Cifar-10的标签
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
@@ -137,11 +116,4 @@ def train(train_set, pre_model_path=None):
 
 # 训练
 if __name__ == "__main__":
-    # 混合样本
-    clean_list, _ = read_list(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/CIFAR-10/clean_png/', shuffle=True, count=50000)
-    pgd_list, _ = read_list(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/gen_adv/pgd/', shuffle=True, count=10000)
-    adv_list, _ = read_list(filename='../Datasets/CIFAR-10/adv.txt', image_dir='../Datasets/CIFAR-10/adv/')
-    mixed_list = clean_list
-    mixed_data = TrainSet(clean_list)
-    train_loader = DataLoader(mixed_data, batch_size=120, shuffle=True, num_workers=2)
-    train(train_loader)
+    train(mixed_loader, pre_model_path='./net/transfer_clean_adv/net_040.pth')
