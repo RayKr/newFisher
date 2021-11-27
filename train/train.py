@@ -20,25 +20,20 @@ parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--outf', default='./tmp/', help='folder to output images and model checkpoints')  # 输出结果保存路径
 args = parser.parse_args()
 
-# 超参数设置
-EPOCH = 100  # 遍历数据集次数
-pre_epoch = 0  # 定义已经遍历数据集的次数
-LR = 0.01  # 学习率
-
 # Cifar-10的标签
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-# 模型定义-ResNet
-net = resnet32_cifar().to(device)
 
-# 定义损失函数和优化方式
-# 损失函数为交叉熵，多用于多分类问题
-criterion = nn.CrossEntropyLoss()
-# 优化方式为mini-batch momentum-SGD，并采用L2正则化（权重衰减）
-optimizer = optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=5e-4)
+def train(train_set, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=100):
+    # 模型定义-ResNet
+    net = resnet32_cifar().to(device)
 
+    # 定义损失函数和优化方式
+    # 损失函数为交叉熵，多用于多分类问题
+    criterion = nn.CrossEntropyLoss()
+    # 优化方式为mini-batch momentum-SGD，并采用L2正则化（权重衰减）
+    optimizer = optim.SGD(net.parameters(), lr=lr, momentum=0.9, weight_decay=5e-4)
 
-def train(train_set, pre_model_path=None):
     if not os.path.exists(args.outf):
         os.makedirs(args.outf)
     best_acc = 85  # 2 初始化best test accuracy
@@ -48,7 +43,7 @@ def train(train_set, pre_model_path=None):
             # 如果pre_epoch不为0，则判断时手动调参后，继续训练，所以需要读取上次保存的模型参数
             if pre_model_path:
                 net.load_state_dict(torch.load(pre_model_path))
-            for epoch in range(pre_epoch, EPOCH):
+            for epoch in range(pre_epoch, epochs):
                 print('\nEpoch: %d' % (epoch + 1))
                 net.train()
                 sum_loss = 0.0
@@ -110,10 +105,10 @@ def train(train_set, pre_model_path=None):
                         f3.write("EPOCH=%d,best_acc= %.3f%%" % (epoch + 1, clean_acc))
                         f3.close()
                         best_acc = clean_acc
-            print("Training Finished, TotalEPOCH=%d" % EPOCH)
+            print("Training Finished, TotalEPOCH=%d" % epochs)
 
 
 # 训练
 if __name__ == "__main__":
     # train(mixed_loader, pre_model_path='./net/transfer_clean_adv/net_040.pth')
-    train(cl_train_loader)
+    train(cl_train_loader, pre_model_path='./tmp/net_100.pth', lr=0.001, pre_epoch=100, epochs=200)
