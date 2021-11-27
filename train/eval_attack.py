@@ -1,14 +1,22 @@
 import torch
 
-attack_list = []
+from attack.fgsm import fgsm_attack
+from attack.pgd import pgd_attack
+from attack.rfgsm import rfgsm_attack
+
+attack_list = {'fgsm': fgsm_attack, 'pgd': pgd_attack, 'rfgsm': rfgsm_attack}
 
 
-def eval_attack_acc(dataloader, net, device, attack_method):
+def eval_attack_acc(dataloader, net, device, attack_method=None, **kwargs):
     total, correct = 0, 0
     for data in dataloader:
         net.eval()
         images, labels = data
         images, labels = images.to(device), labels.to(device)
+
+        if attack_method:
+            att = attack_list[attack_method]
+            images = att(net, device, images, labels, **kwargs)
 
         outputs = net(images)
         # 取得分最高的那个类 (outputs.data的索引号)

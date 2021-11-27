@@ -1,7 +1,9 @@
 import torch
+from torch import nn
 
 
-def rfgsm_attack(model, device, criterion, images, labels, alpha, eps):
+def rfgsm_attack(model, device, images, labels, alpha, eps):
+    criterion = nn.CrossEntropyLoss()
     images = images.to(device)
     labels = labels.to(device)
 

@@ -56,10 +56,10 @@ def train(train_set, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=100):
                     inputs, labels = inputs.to(device), labels.to(device)
 
                     # fgsm_attack
-                    # inputs = fgsm_attack(net, device, criterion, inputs, labels, 0.1)
+                    # inputs = fgsm_attack(net, device, inputs, labels, 0.1)
 
                     # pgd_attack
-                    inputs = pgd_attack(net, device, criterion, inputs, labels)
+                    inputs = pgd_attack(net, device, inputs, labels)
 
                     # 重新计算一遍loss
                     outputs = net(inputs)
