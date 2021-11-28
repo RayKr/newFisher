@@ -322,5 +322,5 @@ def preact_resnet1001_cifar(**kwargs):
 
 
 if __name__ == '__main__':
-    net = resnet20_cifar()
+    net = resnet32_cifar()
     print(net)
