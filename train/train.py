@@ -7,6 +7,7 @@ import torch.optim as optim
 
 from attack.fgsm import fgsm_attack
 from attack.pgd import pgd_attack
+from attack.rfgsm import rfgsm_attack
 from data import cl_test_loader, adv_loader, fgsm_test_loader, pgd_test_loader, cl_train_loader, mixed_loader
 from eval import eval_acc
 from model.ResNet import resnet32_cifar
@@ -59,7 +60,7 @@ def train(train_set, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=100):
                     # inputs = fgsm_attack(net, device, inputs, labels, 0.1)
 
                     # pgd_attack
-                    inputs = pgd_attack(net, device, inputs, labels)
+                    inputs = rfgsm_attack(net, device, inputs, labels)
 
                     # 重新计算一遍loss
                     outputs = net(inputs)
@@ -111,4 +112,4 @@ def train(train_set, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=100):
 # 训练
 if __name__ == "__main__":
     # train(mixed_loader, pre_model_path='./net/transfer_clean_adv/net_040.pth')
-    train(cl_train_loader, pre_model_path='./tmp/net_100.pth', lr=0.001, pre_epoch=100, epochs=200)
+    train(cl_train_loader, pre_model_path='./tmp/net_050.pth', lr=0.01, pre_epoch=50, epochs=100)

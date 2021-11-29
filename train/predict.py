@@ -12,8 +12,9 @@ normalize = transforms.Normalize(
 # 准备数据集并预处理
 transform_train = transforms.Compose([
     # 训练集上做数据增强
-    transforms.RandomCrop(32, padding=4),  # 先四周填充0，在把图像随机裁剪成32*32
-    transforms.RandomHorizontalFlip(),  # 图像一半的概率翻转，一半的概率不翻转
+    # transforms.RandomCrop(32, padding=4),  # 先四周填充0，在把图像随机裁剪成32*32
+    # transforms.RandomHorizontalFlip(),  # 图像一半的概率翻转，一半的概率不翻转
+    # transforms.Resize([64, 64]),
     transforms.ToTensor(),
     normalize,
 ])
@@ -61,7 +62,7 @@ if __name__ == "__main__":
     # predict('./net/old/net_clean_136_jpg_best.pth', '../Datasets/predict/clean/', '../Datasets/predict/result/clean_jpg/clean.txt')
 
     # clean+png的训练模型
-    # predict('./net/transfer_clean_adv/net_059.pth', '../Datasets/predict/A/', '../Datasets/predict/result/transfer/A.txt')
-    # predict('./net/transfer_clean_adv/net_059.pth', '../Datasets/predict/B/', '../Datasets/predict/result/transfer/B.txt')
+    # predict('./net/transfer_clean_adv/net_059.pth', '../Datasets/predict/AJPG/', '../Datasets/predict/result/transfer/A.txt')
+    predict('./net/transfer_clean_adv/net_059.pth', '../Datasets/predict/BJPG/', '../Datasets/predict/result/transfer/B.txt')
     # predict('./net/transfer_clean_adv/net_059.pth', '../Datasets/predict/clean/', '../Datasets/predict/result/transfer/clean.txt')
-    predict('./tmp/net_170.pth', '../Datasets/predict/clean/', '../Datasets/predict/result/fgsm/clean.txt')
+    # predict('./net/pgd/net_150.pth', '../Datasets/predict/AJPG/', '../Datasets/predict/result/pgd/A.txt')
