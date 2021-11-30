@@ -15,23 +15,23 @@ def show_acc(file_path, title):
     l1, = plt.plot(epoch, acc, color='r')
     l2, = plt.plot(epoch, adv, color='b')
     plt.legend(handles=[l1, l2], labels=['Clean Accuracy', 'Adv Accuracy'])
-    plt.axis([0, 200, 0, 100])
+    plt.axis([0, 160, 0, 100])
     plt.grid(b=None, which='major', axis='y')
     plt.title(title)
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy (%)')
 
     # 添加箭头
-    plt.annotate('mix clean(5000) + adv(2000)',
-                 ha='center', va='bottom',
-                 xytext=(60, 30),
-                 xy=(103, 68),
-                 arrowprops={'facecolor': 'black', 'shrink': 0.05, 'width': 1, 'headwidth': 5})
-    plt.annotate('mix clean(20000) + adv(2000)',
-                 ha='center', va='bottom',
-                 xytext=(150, 20),
-                 xy=(172, 75),
-                 arrowprops={'facecolor': 'black', 'shrink': 0.05, 'width': 1, 'headwidth': 5})
+    # plt.annotate('mix clean(5000) + adv(2000)',
+    #              ha='center', va='bottom',
+    #              xytext=(60, 30),
+    #              xy=(103, 68),
+    #              arrowprops={'facecolor': 'black', 'shrink': 0.05, 'width': 1, 'headwidth': 5})
+    # plt.annotate('mix clean(20000) + adv(2000)',
+    #              ha='center', va='bottom',
+    #              xytext=(150, 20),
+    #              xy=(172, 75),
+    #              arrowprops={'facecolor': 'black', 'shrink': 0.05, 'width': 1, 'headwidth': 5})
 
     plt.show()
 
@@ -51,7 +51,7 @@ def show_log(file_path, title):
     fig = plt.figure()
     ax1 = fig.add_subplot()
     l1, = ax1.plot(iters, loss, 'b')
-    ax1.set_yticks(np.arange(0, 2.4, 0.2))
+    ax1.set_yticks(np.arange(1, 3., 0.2))
     ax1.set_ylabel('loss')
     plt.xlabel('iter.')
 
@@ -65,5 +65,5 @@ def show_log(file_path, title):
     plt.show()
 
 
-# show_acc('../train/net/fgsm/acc.txt', 'FGSM Adv Train (eps=0.1)')
-show_log('../train/net/fgsm/log.txt', 'FGSM Adv Train (eps=0.1)')
+# show_acc('../train/net/pgd/acc.txt', 'PGD Adv Train (eps=0.3, alpha=2/255, iters=20)')
+show_log('../train/net/pgd/log.txt', 'PGD Adv Train (eps=0.3, alpha=2/255, iters=20)')

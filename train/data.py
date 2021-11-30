@@ -34,18 +34,18 @@ cl_train_loader = DataLoader(cl_train_data, batch_size=BATCH_SIZE, shuffle=True,
 cl_test_loader = DataLoader(cl_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=8)
 
 # pdg生成对抗样本
-# pgd_set = ReadSet(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/gen_adv/pgd/', count=50000, transform=transform_train)
-# pgd_train_data = pgd_set.get_train_set()
-# pgd_test_data = pgd_set.get_test_set()
-# pgd_train_loader = DataLoader(pgd_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
-# pgd_test_loader = DataLoader(pgd_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=4)
+pgd_set = ReadSet(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/gen_adv/pgd/', count=50000, transform=transform_train)
+pgd_train_data = pgd_set.get_train_set()
+pgd_test_data = pgd_set.get_test_set()
+pgd_train_loader = DataLoader(pgd_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
+pgd_test_loader = DataLoader(pgd_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=4)
 
 # fgsm生成的对抗样本
-# fgsm_set = ReadSet(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/gen_adv/fgsm_0.1/', count=50000, transform=transform_train)
-# fgsm_train_data = fgsm_set.get_train_set()
-# fgsm_test_data = fgsm_set.get_test_set()
-# fgsm_train_loader = DataLoader(fgsm_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
-# fgsm_test_loader = DataLoader(fgsm_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=4)
+fgsm_set = ReadSet(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/gen_adv/fgsm_0.1/', count=50000, transform=transform_train)
+fgsm_train_data = fgsm_set.get_train_set()
+fgsm_test_data = fgsm_set.get_test_set()
+fgsm_train_loader = DataLoader(fgsm_train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
+fgsm_test_loader = DataLoader(fgsm_test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=4)
 
 # 对抗样本验证集
 adv_set = ReadSet(filename='../Datasets/CIFAR-10/adv.txt', image_dir='../Datasets/CIFAR-10/adv/', shuffle=False, transform=transform_train)

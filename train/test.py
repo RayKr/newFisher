@@ -39,4 +39,4 @@ def robust_test(model_path, model_title):
 if __name__ == "__main__":
     # robust_test('./net/pre_train/net_070.pth', 'Clean预训练模型')
     # robust_test('./net/pgd/net_150.pth', 'PGD对抗训练模型')
-    robust_test('./net/swin-t/swin_tiny_patch4_window7_224.pth', 'Swin-T')
+    robust_test('./net/swin-t/net_010.pth', 'Swin-T')
