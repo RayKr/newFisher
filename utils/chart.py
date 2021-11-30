@@ -12,8 +12,9 @@ def show_acc(file_path):
             adv.append(float(line[2].split('=')[1].replace('%', '')))
         # print(epoch, acc, adv)
 
-    plt.plot(epoch, acc, color='r')
-    plt.plot(epoch, adv, color='b')
+    l1, = plt.plot(epoch, acc, color='r')
+    l2, = plt.plot(epoch, adv, color='b')
+    plt.legend(handles=[l1, l2], labels=['Clean Accuracy', 'Adv Accuracy'])
     plt.axis([0, 200, 0, 100])
     plt.grid(b=None, which='major', axis='y')
     plt.title('rfgsm eps=0.15')
@@ -36,19 +37,20 @@ def show_log(file_path):
 
     fig = plt.figure()
     ax1 = fig.add_subplot()
-    ax1.plot(iters, loss, 'b')
+    l1, = ax1.plot(iters, loss, 'b')
     ax1.set_yticks(np.arange(0, 2.4, 0.2))
     ax1.set_ylabel('loss')
     plt.xlabel('iter.')
 
     ax2 = ax1.twinx()  # this is the important function
-    ax2.plot(iters, acc, 'r')
+    l2, = ax2.plot(iters, acc, 'r')
     ax2.set_yticks(np.arange(0, 100, 10))
     ax2.set_ylabel('Accuracy (%)')
 
+    plt.legend(handles=[l1, l2], labels=['loss', 'Accuracy'])
     plt.title('rfgsm eps=0.15')
     plt.show()
 
 
-# show_acc('../train/net/pre_rfgsm/acc.txt')
+show_acc('../train/net/pre_rfgsm/acc.txt')
 show_log('../train/net/pre_rfgsm/log.txt')
