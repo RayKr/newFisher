@@ -9,7 +9,7 @@ import yaml
 from attack.fgsm import fgsm_attack
 from attack.pgd import pgd_attack
 from attack.rfgsm import rfgsm_attack
-from data import cl_test_loader, adv_loader, fgsm_test_loader, pgd_test_loader, cl_train_loader, mixed_loader
+from data import cl_test_loader, adv_loader, cl_train_loader
 from eval import eval_acc
 from model.ResNet import resnet32_cifar
 
@@ -68,7 +68,7 @@ def train(train_set, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=100):
                     # inputs = fgsm_attack(net, device, inputs, labels, 0.1)
 
                     # pgd_attack
-                    inputs = rfgsm_attack(net, device, inputs, labels)
+                    # inputs = rfgsm_attack(net, device, inputs, labels)
 
                     # 重新计算一遍loss
                     outputs = net(inputs)
@@ -123,7 +123,7 @@ if __name__ == "__main__":
     # train(mixed_loader, pre_model_path='./net/transfer_clean_adv/net_040.pth')
     # 1.先用100%clean数据训预训练模型
     # 0.01|40 -> 0.001|60 -> 0.0001|70
-    train(cl_train_loader, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=160)
+    train(cl_train_loader, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=150)
     # 2.rfgsm对抗训练
     # 使用预训练模型，0.01|104 -> 0.001|125
     # train(cl_train_loader, pre_model_path='./tmp/net_160.pth', lr=0.00001, pre_epoch=160, epochs=200)
