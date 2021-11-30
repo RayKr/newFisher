@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def show_acc(file_path):
+def show_acc(file_path, title):
     epoch, acc, adv = [], [], []
     with open(file_path, 'r') as f:
         for line in f.readlines():
@@ -17,13 +17,26 @@ def show_acc(file_path):
     plt.legend(handles=[l1, l2], labels=['Clean Accuracy', 'Adv Accuracy'])
     plt.axis([0, 200, 0, 100])
     plt.grid(b=None, which='major', axis='y')
-    plt.title('rfgsm eps=0.15')
-    plt.xlabel('epoch')
+    plt.title(title)
+    plt.xlabel('Epoch')
     plt.ylabel('Accuracy (%)')
+
+    # 添加箭头
+    plt.annotate('mix clean(5000) + adv(2000)',
+                 ha='center', va='bottom',
+                 xytext=(60, 30),
+                 xy=(103, 68),
+                 arrowprops={'facecolor': 'black', 'shrink': 0.05, 'width': 1, 'headwidth': 5})
+    plt.annotate('mix clean(20000) + adv(2000)',
+                 ha='center', va='bottom',
+                 xytext=(150, 20),
+                 xy=(172, 75),
+                 arrowprops={'facecolor': 'black', 'shrink': 0.05, 'width': 1, 'headwidth': 5})
+
     plt.show()
 
 
-def show_log(file_path):
+def show_log(file_path, title):
     iters, loss, acc = [], [], []
     count = 0
     with open(file_path, 'r') as f:
@@ -48,9 +61,9 @@ def show_log(file_path):
     ax2.set_ylabel('Accuracy (%)')
 
     plt.legend(handles=[l1, l2], labels=['loss', 'Accuracy'])
-    plt.title('rfgsm eps=0.15')
+    plt.title(title)
     plt.show()
 
 
-show_acc('../train/net/pre_rfgsm/acc.txt')
-show_log('../train/net/pre_rfgsm/log.txt')
+# show_acc('../train/net/fgsm/acc.txt', 'FGSM Adv Train (eps=0.1)')
+show_log('../train/net/fgsm/log.txt', 'FGSM Adv Train (eps=0.1)')

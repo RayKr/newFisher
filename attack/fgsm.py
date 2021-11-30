@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 
-def fgsm_attack(model, device, inputs, labels, epsilon):
+def fgsm_attack(model, device, inputs, labels, epsilon=0.1):
     criterion = nn.CrossEntropyLoss()
     inputs = inputs.to(device)
     labels = labels.to(device)
