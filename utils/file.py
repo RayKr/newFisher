@@ -17,18 +17,39 @@ transform_default = transforms.Compose([
 ])
 
 
-# 整张图 DCT 变换
-def whole_img_dct(filename):
-    img_u8 = cv2.imread(filename, 0)
-    img_f32 = img_u8.astype(np.float)  # 数据类型转换 转换为浮点型
-    img_dct = cv2.dct(img_f32)            # 进行离散余弦变换
-    img_dct_log = np.log(abs(img_dct))    # 进行log处理
-    img_idct = cv2.idct(img_dct)          # 进行离散余弦反变换
-    return img_dct_log, img_idct
+# DCT 变换
+def image_dct(filename, pixel):
+    cv_image = cv2.imread(filename)  # 读取图片，
+    b, g, r = cv2.split(cv_image)
+
+    bf = b.astype('float')
+    gf = g.astype('float')
+    rf = r.astype('float')
+    dct_b = cv2.dct(bf)
+    dct_g = cv2.dct(gf)
+    dct_r = cv2.dct(rf)
+    # 图像压缩
+    dep_b, dep_g, dep_r = np.zeros(b.shape), np.zeros(g.shape), np.zeros(r.shape)
+    dep_b[0:pixel, 0:pixel] = dct_b[0:pixel, 0:pixel]
+    dep_g[0:pixel, 0:pixel] = dct_g[0:pixel, 0:pixel]
+    dep_r[0:pixel, 0:pixel] = dct_r[0:pixel, 0:pixel]
+    # DCT逆变换
+    db = cv2.idct(dep_b)
+    dg = cv2.idct(dep_g)
+    dr = cv2.idct(dep_r)
+    # 合并三通道
+    img_merge = cv2.merge([dg, dg, dr]).astype(np.uint8)
+    source = cv2.merge([b, g, r])
+    # OpenCV转PIL
+    pil_img = Image.fromarray(cv2.cvtColor(img_merge, cv2.COLOR_BGR2RGB))
+    return pil_img
 
 
 def default_loader(filename, transform=None, dct=False):
-    img_pil = Image.open(filename)
+    if dct:
+        img_pil = image_dct(filename, 26)
+    else:
+        img_pil = Image.open(filename)
     if transform:
         img_tensor = transform(img_pil)
     else:
@@ -112,7 +133,6 @@ class TrainSet(Dataset):
     def __init__(self, data_list=None, transform=None, dct=False):
         """
         :param data_list: 数据集list [['0.jpg', 0], ['1.jpg', 8]]
-        :param image_dir: 图片路径：image_dir+imge_name.jpg构成图片的完整路径
         :param transform: 图像增强方法
         """
         self.data_list = data_list

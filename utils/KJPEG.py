@@ -381,4 +381,4 @@ class KJPEG:
 if __name__ == '__main__':
     kjpeg = KJPEG()
     kjpeg.Compress("./space.jpeg")
-    # kjpeg.Decompress("./amilk.gpj")
+    kjpeg.Decompress("./space.gpj")

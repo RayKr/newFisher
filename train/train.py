@@ -4,6 +4,7 @@ import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import yaml
 
 from attack.fgsm import fgsm_attack
 from attack.pgd import pgd_attack
@@ -13,6 +14,9 @@ from eval import eval_acc
 from model.ResNet import resnet32_cifar
 
 # 定义是否使用GPU
+from model.swin_transformer import SwinTransformer
+from utils.Dict import dict_to_obj
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print('current device=', device)
 
@@ -24,10 +28,14 @@ args = parser.parse_args()
 # Cifar-10的标签
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
+# f = open('../model/swin_tiny_patch4_window7_224.yaml')
+# config = yaml.load(f)
+# config = dict_to_obj(config)
 
 def train(train_set, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=100):
     # 模型定义-ResNet
-    net = resnet32_cifar().to(device)
+    # net = resnet32_cifar().to(device)
+    net = SwinTransformer().to(device)
 
     # 定义损失函数和优化方式
     # 损失函数为交叉熵，多用于多分类问题
@@ -88,11 +96,12 @@ def train(train_set, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=100):
                     print('Clean测试集 分类准确率为：%.3f%%' % clean_acc)
                     adv_acc = eval_acc(adv_loader, net, device)
                     print('Adv测试集 分类准确率为：%.3f%%' % adv_acc)
-                    fgsm_acc = eval_acc(fgsm_test_loader, net, device)
-                    print('FGSM对抗样本 分类准确率为：%.3f%%' % fgsm_acc)
-                    pgd_acc = eval_acc(pgd_test_loader, net, device)
-                    print('PGD对抗样本 分类准确率为：%.3f%%' % pgd_acc)
-                    f.write("EPOCH=%03d, Accuracy=%.3f%%, Adv_Accuracy=%.3f%%, FGSM_Accuracy=%.3f%%, PGD_Accuracy=%.4f%%" % (epoch + 1, clean_acc, adv_acc, fgsm_acc, pgd_acc))
+                    # fgsm_acc = eval_acc(fgsm_test_loader, net, device)
+                    # print('FGSM对抗样本 分类准确率为：%.3f%%' % fgsm_acc)
+                    # pgd_acc = eval_acc(pgd_test_loader, net, device)
+                    # print('PGD对抗样本 分类准确率为：%.3f%%' % pgd_acc)
+                    # f.write("EPOCH=%03d, Accuracy=%.3f%%, Adv_Accuracy=%.3f%%, FGSM_Accuracy=%.3f%%, PGD_Accuracy=%.4f%%" % (epoch + 1, clean_acc, adv_acc, fgsm_acc, pgd_acc))
+                    f.write("EPOCH=%03d, Accuracy=%.3f%%, Adv_Accuracy=%.3f%%" % (epoch + 1, clean_acc, adv_acc))
                     f.write('\n')
                     f.flush()
 
@@ -112,4 +121,12 @@ def train(train_set, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=100):
 # 训练
 if __name__ == "__main__":
     # train(mixed_loader, pre_model_path='./net/transfer_clean_adv/net_040.pth')
-    train(cl_train_loader, pre_model_path='./tmp/net_050.pth', lr=0.01, pre_epoch=50, epochs=100)
+    # 1.先用100%clean数据训预训练模型
+    # 0.01|40 -> 0.001|60 -> 0.0001|70
+    train(cl_train_loader, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=160)
+    # 2.rfgsm对抗训练
+    # 使用预训练模型，0.01|104 -> 0.001|125
+    # train(cl_train_loader, pre_model_path='./tmp/net_160.pth', lr=0.00001, pre_epoch=160, epochs=200)
+    # 3.学习Adv对抗样本
+    # train(mixed_loader, pre_model_path='./net/pre_rfgsm/net_125_best.pth', lr=0.01, pre_epoch=0, epochs=200)
+

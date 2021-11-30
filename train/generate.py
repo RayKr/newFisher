@@ -33,7 +33,7 @@ def generate_jpg(input_dir, output_dir):
     for _, item in enumerate(files):
         filename = item.split('.')[0]
         img = Image.open(input_dir + item)
-        img.save(output_dir + filename + '.jpg', quality=80)
+        img.save(output_dir + filename + '.jpg', quality=75)
         print(count)
         count += 1
 
@@ -60,5 +60,5 @@ def generate_adv_example(attack_method='fgsm', **kwargs):
 
 if __name__ == "__main__":
     # generate_adv_example()
-    generate_jpg(input_dir='../Datasets/predict/B/', output_dir='../Datasets/predict/BJPG/')
+    generate_jpg(input_dir='../Datasets/predict/up/', output_dir='../Datasets/predict/upJPG/')
 

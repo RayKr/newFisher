@@ -56,13 +56,7 @@ def predict(model_path, input_path, out_filename):
 
 
 if __name__ == "__main__":
-    # clean+jpg的训练模型
-    # predict('./net/old/net_clean_136_jpg_best.pth', '../Datasets/predict/A/', '../Datasets/predict/result/clean_jpg/A.txt')
-    # predict('./net/old/net_clean_136_jpg_best.pth', '../Datasets/predict/B/', '../Datasets/predict/result/clean_jpg/B.txt')
-    # predict('./net/old/net_clean_136_jpg_best.pth', '../Datasets/predict/clean/', '../Datasets/predict/result/clean_jpg/clean.txt')
-
-    # clean+png的训练模型
-    # predict('./net/transfer_clean_adv/net_059.pth', '../Datasets/predict/AJPG/', '../Datasets/predict/result/transfer/A.txt')
-    predict('./net/transfer_clean_adv/net_059.pth', '../Datasets/predict/BJPG/', '../Datasets/predict/result/transfer/B.txt')
-    # predict('./net/transfer_clean_adv/net_059.pth', '../Datasets/predict/clean/', '../Datasets/predict/result/transfer/clean.txt')
-    # predict('./net/pgd/net_150.pth', '../Datasets/predict/AJPG/', '../Datasets/predict/result/pgd/A.txt')
+    # predict('./net/pre_rfgsm/net_125_best.pth', '../Datasets/predict/A/', '../Datasets/predict/result/rfgsm/A.txt')
+    # predict('./net/pre_rfgsm/net_125_best.pth', '../Datasets/predict/B/', '../Datasets/predict/result/rfgsm/B.txt')
+    # predict('./net/pre_rfgsm/net_125_best.pth', '../Datasets/predict/up/', '../Datasets/predict/result/rfgsm/提高.txt')
+    predict('./net/pre_rfgsm/net_125_best.pth', '../Datasets/predict/clean/', '../Datasets/predict/result/rfgsm/clean.txt')
