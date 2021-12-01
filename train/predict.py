@@ -59,4 +59,4 @@ if __name__ == "__main__":
     # predict('./net/pre_rfgsm/net_125_best.pth', '../Datasets/predict/A/', '../Datasets/predict/result/rfgsm/A.txt')
     # predict('./net/pre_rfgsm/net_125_best.pth', '../Datasets/predict/B/', '../Datasets/predict/result/rfgsm/B.txt')
     # predict('./net/pre_rfgsm/net_125_best.pth', '../Datasets/predict/up/', '../Datasets/predict/result/rfgsm/提高.txt')
-    predict('./net/pre_rfgsm/net_125_best.pth', '../Datasets/predict/clean/', '../Datasets/predict/result/rfgsm/clean.txt')
+    predict('./net/mixed/net_100.pth', '../Datasets/predict/clean/', '../Datasets/predict/result/mixed/cleanJPG.txt')

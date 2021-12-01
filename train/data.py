@@ -1,9 +1,10 @@
+from cv2 import INTER_LINEAR, INTER_CUBIC
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
 from utils.file import ReadSet, read_list, TrainSet
 
-BATCH_SIZE = 80
+BATCH_SIZE = 128
 
 normalize = transforms.Normalize(
     mean=[0.485, 0.456, 0.406],
@@ -12,8 +13,8 @@ normalize = transforms.Normalize(
 # 准备数据集并预处理
 transform_train = transforms.Compose([
     # 训练集上做数据增强
-    # transforms.RandomCrop(32, padding=4),  # 先四周填充0，在把图像随机裁剪成32*32
-    transforms.Resize([224, 224]),
+    transforms.RandomCrop(32, padding=4),  # 先四周填充0，在把图像随机裁剪成32*32
+    # transforms.Resize(64, interpolation=INTER_CUBIC),
     transforms.RandomHorizontalFlip(),  # 图像一半的概率翻转，一半的概率不翻转
     transforms.ToTensor(),
     normalize,
@@ -53,10 +54,10 @@ adv_data = adv_set.get_train_set()
 adv_loader = DataLoader(adv_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
 # 混合样本
-# clean_list, _ = read_list(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/CIFAR-10/clean_png/', shuffle=True, count=20000)
-# clean_list, _ = read_list(filename='../Datasets/CIFAR-10/clean_label_jpg.txt', image_dir='../Datasets/CIFAR-10/clean_jpg/', shuffle=True, count=20000)
+# clean_list, _ = read_list(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/CIFAR-10/clean_png/', shuffle=True, count=50000)
+clean_list, _ = read_list(filename='../Datasets/CIFAR-10/clean_label_jpg.txt', image_dir='../Datasets/CIFAR-10/clean_jpg/', shuffle=True, count=50000)
 # pgd_list, _ = read_list(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/gen_adv/pgd/', shuffle=True, count=10000)
-# adv_list, _ = read_list(filename='../Datasets/CIFAR-10/adv.txt', image_dir='../Datasets/CIFAR-10/adv/')
-# mixed_list = clean_list + adv_list
-# mixed_data = TrainSet(mixed_list, transform=transform_train)
-# mixed_loader = DataLoader(mixed_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
+adv_list, _ = read_list(filename='../Datasets/CIFAR-10/adv.txt', image_dir='../Datasets/CIFAR-10/adv/')
+mixed_list = clean_list + adv_list + adv_list + adv_list
+mixed_data = TrainSet(mixed_list, transform=transform_train)
+mixed_loader = DataLoader(mixed_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)

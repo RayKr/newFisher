@@ -8,8 +8,8 @@ from model.swin_transformer import SwinTransformer
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # 加载模型
-# net = resnet32_cifar().to(device)
-net = SwinTransformer().to(device)
+net = resnet32_cifar().to(device)
+# net = SwinTransformer().to(device)
 
 
 def attack_test(filename, desc=None, attack_method=None, **kwargs):
@@ -39,4 +39,6 @@ def robust_test(model_path, model_title):
 if __name__ == "__main__":
     # robust_test('./net/pre_train/net_070.pth', 'Clean预训练模型')
     # robust_test('./net/pgd/net_150.pth', 'PGD对抗训练模型')
-    robust_test('./net/swin-t/net_010.pth', 'Swin-T')
+    robust_test('./net/mixed/net_111.pth', 'JPG压缩+混合训练模型')
+    # robust_test('./net/swin_t/net_100.pth', 'Swin-T')
+    # robust_test('./net/clean/net_100.pth', 'Vanilla训练模型')
