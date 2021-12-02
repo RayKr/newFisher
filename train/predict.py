@@ -14,7 +14,7 @@ transform_train = transforms.Compose([
     # 训练集上做数据增强
     # transforms.RandomCrop(32, padding=4),  # 先四周填充0，在把图像随机裁剪成32*32
     # transforms.RandomHorizontalFlip(),  # 图像一半的概率翻转，一半的概率不翻转
-    transforms.Resize([224, 224]),
+    # transforms.Resize([224, 224]),
     transforms.ToTensor(),
     normalize,
 ])
@@ -59,9 +59,9 @@ def predict(model_name, pre_model_name, input_path, out_filename):
 
 
 if __name__ == "__main__":
-    # predict('resnet32', 'clean', '../Datasets/predict/BJPG/', '../Datasets/predict/result/clean/BJPG.txt')
-    # predict('resnet32', 'fgsm', '../Datasets/predict/BJPG/', '../Datasets/predict/result/fgsm/BJPG.txt')
-    # predict('resnet32', 'rfgsm', '../Datasets/predict/BJPG/', '../Datasets/predict/result/rfgsm/BJPG.txt')
-    # predict('resnet32', 'pgd', '../Datasets/predict/BJPG/', '../Datasets/predict/result/pgd/BJPG.txt')
-    # predict('resnet32', 'mixed', '../Datasets/predict/BJPG/', '../Datasets/predict/result/mixed/BJPG.txt')
-    predict('swin-t', 'swin-t', '../Datasets/predict/upJPG/', '../Datasets/predict/result/swin-t/提高JPG.txt')
+    predict('resnet32', 'clean', '../Datasets/predict/B/', '../Datasets/predict/result/clean/B.txt')
+    # predict('resnet32', 'fgsm', '../Datasets/predict/B/', '../Datasets/predict/result/fgsm/B.txt')
+    # predict('resnet32', 'rfgsm', '../Datasets/predict/B/', '../Datasets/predict/result/rfgsm/B.txt')
+    # predict('resnet32', 'pgd', '../Datasets/predict/B/', '../Datasets/predict/result/pgd/B.txt')
+    # predict('resnet32', 'mixed', '../Datasets/predict/B/', '../Datasets/predict/result/mixed/B.txt')
+    # predict('swin-t', 'swin-t', '../Datasets/predict/up/', '../Datasets/predict/result/swin-t/提高.txt')
