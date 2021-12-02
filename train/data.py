@@ -14,7 +14,7 @@ normalize = transforms.Normalize(
 transform_train = transforms.Compose([
     # 训练集上做数据增强
     transforms.RandomCrop(32, padding=4),  # 先四周填充0，在把图像随机裁剪成32*32
-    # transforms.Resize(64, interpolation=INTER_CUBIC),
+    # transforms.Resize([224, 224]),
     transforms.RandomHorizontalFlip(),  # 图像一半的概率翻转，一半的概率不翻转
     transforms.ToTensor(),
     normalize,

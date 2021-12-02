@@ -1,41 +1,20 @@
-import argparse
-import os
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import yaml
 
-from attack.fgsm import fgsm_attack
-from attack.pgd import pgd_attack
-from attack.rfgsm import rfgsm_attack
-from data import cl_test_loader, adv_loader, cl_train_loader, mixed_loader
+from data import cl_test_loader, adv_loader, cl_train_loader
 from eval import eval_acc
-from model.ResNet import resnet32_cifar
-
-# 定义是否使用GPU
-from model.swin_transformer import SwinTransformer
-from utils.Dict import dict_to_obj
+from net import model_type
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print('current device=', device)
-
-# 参数设置,使得我们能够手动输入命令行参数，就是让风格变得和Linux命令行差不多
-parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
-parser.add_argument('--outf', default='./tmp/', help='folder to output images and model checkpoints')  # 输出结果保存路径
-args = parser.parse_args()
-
 # Cifar-10的标签
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-# f = open('../model/swin_tiny_patch4_window7_224.yaml')
-# config = yaml.load(f)
-# config = dict_to_obj(config)
 
-def train(train_set, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=100):
+def train(train_set, model_name='resnet32', pre_model_path=None, lr=0.01, pre_epoch=0, epochs=100):
     # 模型定义-ResNet
-    net = resnet32_cifar().to(device)
-    # net = SwinTransformer().to(device)
+    net = model_type[model_name].to(device)
 
     # 定义损失函数和优化方式
     # 损失函数为交叉熵，多用于多分类问题
@@ -43,8 +22,6 @@ def train(train_set, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=100):
     # 优化方式为mini-batch momentum-SGD，并采用L2正则化（权重衰减）
     optimizer = optim.SGD(net.parameters(), lr=lr, momentum=0.9, weight_decay=5e-4)
 
-    if not os.path.exists(args.outf):
-        os.makedirs(args.outf)
     best_acc = 85  # 2 初始化best test accuracy
     print("Start Training, Resnet!")  # 定义遍历数据集的次数
     with open("acc.txt", "w") as f:
@@ -107,7 +84,7 @@ def train(train_set, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=100):
 
                     # 将每次测试结果实时写入acc.txt文件中
                     print('Saving model......')
-                    torch.save(net.state_dict(), '%s/net_%03d.pth' % (args.outf, epoch + 1))
+                    torch.save(net.state_dict(), './tmp/net_%03d.pth' % (epoch + 1))
 
                     # 记录最佳测试分类准确率并写入best_acc.txt文件中
                     if clean_acc > best_acc:
@@ -131,8 +108,8 @@ if __name__ == "__main__":
     # train(mixed_loader, pre_model_path='./net/pre_rfgsm/net_125_best.pth', lr=0.01, pre_epoch=0, epochs=200)
 
     # Swin-T
-    # 0.01 | 16 -> 0.001
-    # train(cl_train_loader, pre_model_path='./tmp/net_100.pth', lr=0.001, pre_epoch=100, epochs=200)
+    # 0.01 | 16 -> 0.001 | 200
+    train(cl_train_loader, model_name='swin-t', pre_model_path='./tmp/net_208.pth', lr=0.0001, pre_epoch=208, epochs=300)
 
     # ResNet32
-    train(mixed_loader, pre_model_path='./tmp/net_100.pth', lr=0.0001, pre_epoch=100, epochs=200)
+    # train(mixed_loader, pre_model_path='./tmp/net_100.pth', lr=0.0001, pre_epoch=100, epochs=200)

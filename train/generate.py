@@ -1,4 +1,5 @@
 import os
+
 import torch
 from PIL import Image
 from torch.utils.data import DataLoader
@@ -6,11 +7,9 @@ from torchvision import transforms
 
 from attack.fgsm import fgsm_attack
 from attack.pgd import pgd_attack
-from model.ResNet import resnet20_cifar, resnet32_cifar
-from utils.file import ReadSet, read_images, TrainSet
-from attack.fgsm import fgsm_attack
-from attack.pgd import pgd_attack
 from attack.rfgsm import rfgsm_attack
+from model.ResNet import resnet32_cifar
+from utils.file import ReadSet
 
 attack_list = {'fgsm': fgsm_attack, 'pgd': pgd_attack, 'rfgsm': rfgsm_attack}
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
