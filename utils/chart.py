@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def show_acc(file_path, title):
+def show_acc(file_path, title, max_epoch=200):
     epoch, acc, adv = [], [], []
     with open(file_path, 'r') as f:
         for line in f.readlines():
@@ -15,7 +15,7 @@ def show_acc(file_path, title):
     l1, = plt.plot(epoch, acc, color='r')
     l2, = plt.plot(epoch, adv, color='b')
     plt.legend(handles=[l1, l2], labels=['Clean Accuracy', 'Adv Accuracy'])
-    plt.axis([0, 160, 0, 100])
+    plt.axis([0, max_epoch, 0, 100])
     plt.grid(b=None, which='major', axis='y')
     plt.title(title)
     plt.xlabel('Epoch')
@@ -51,7 +51,7 @@ def show_log(file_path, title):
     fig = plt.figure()
     ax1 = fig.add_subplot()
     l1, = ax1.plot(iters, loss, 'b')
-    ax1.set_yticks(np.arange(1, 3., 0.2))
+    ax1.set_yticks(np.arange(0, 3., 0.3))
     ax1.set_ylabel('loss')
     plt.xlabel('iter.')
 
@@ -65,5 +65,5 @@ def show_log(file_path, title):
     plt.show()
 
 
-# show_acc('../train/net/pgd/acc.txt', 'PGD Adv Train (eps=0.3, alpha=2/255, iters=20)')
-show_log('../train/net/pgd/log.txt', 'PGD Adv Train (eps=0.3, alpha=2/255, iters=20)')
+show_acc('../train/net/swin_t/acc.txt', 'Swin Transformer Train', max_epoch=100)
+show_log('../train/net/swin_t/log.txt', 'Swin Transformer Train')

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from data import cl_test_loader, adv_loader, cl_train_loader
+from data import cl_test_loader, adv_loader, cl_train_loader, mixed_loader
 from eval import eval_acc
 from net import model_type
 
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     # train(mixed_loader, pre_model_path='./net/transfer_clean_adv/net_040.pth')
     # 1.先用100%clean数据训预训练模型
     # 0.01|40 -> 0.001|60 -> 0.0001|70
-    train(cl_train_loader, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=100)
+    # train(cl_train_loader, pre_model_path=None, lr=0.01, pre_epoch=0, epochs=100)
     # 2.rfgsm对抗训练
     # 使用预训练模型，0.01|104 -> 0.001|125
     # train(cl_train_loader, pre_model_path='./tmp/net_160.pth', lr=0.00001, pre_epoch=160, epochs=200)
@@ -112,4 +112,4 @@ if __name__ == "__main__":
     # train(cl_train_loader, model_name='swin-t', pre_model_path='./tmp/net_208.pth', lr=0.0001, pre_epoch=208, epochs=300)
 
     # ResNet32
-    # train(mixed_loader, pre_model_path='./tmp/net_100.pth', lr=0.0001, pre_epoch=100, epochs=200)
+    train(mixed_loader, model_name='resnet32', pre_model_path='./tmp/net_100.pth', lr=0.001, pre_epoch=100, epochs=200)

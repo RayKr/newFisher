@@ -35,8 +35,9 @@ def robust_test(model_name='resnet32', pre_model_name='clean', model_title='Clea
 
 if __name__ == "__main__":
     # robust_test(model_name='resnet32', pre_model_name='pre', model_title='预训练模型')
-    robust_test(model_name='resnet32', pre_model_name='clean', model_title='Clean训练模型')
+    # robust_test(model_name='resnet32', pre_model_name='clean', model_title='Clean训练模型')
     # robust_test(model_name='resnet32', pre_model_name='fgsm', model_title='FGSM对抗训练模型')
     # robust_test(model_name='resnet32', pre_model_name='rfgsm', model_title='RFGSM对抗训练模型')
     # robust_test(model_name='resnet32', pre_model_name='pgd', model_title='PGD对抗训练模型')
+    robust_test(model_name='resnet32', pre_model_name='mixed', model_title='Mixed训练模型')
     # robust_test(model_name='swin-t', pre_model_name='swin-t', model_title='Swin Transformer训练模型')

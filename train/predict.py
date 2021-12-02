@@ -59,9 +59,9 @@ def predict(model_name, pre_model_name, input_path, out_filename):
 
 
 if __name__ == "__main__":
-    predict('resnet32', 'clean', '../Datasets/predict/B/', '../Datasets/predict/result/clean/B.txt')
+    # predict('resnet32', 'clean', '../Datasets/predict/B/', '../Datasets/predict/result/clean/B.txt')
     # predict('resnet32', 'fgsm', '../Datasets/predict/B/', '../Datasets/predict/result/fgsm/B.txt')
     # predict('resnet32', 'rfgsm', '../Datasets/predict/B/', '../Datasets/predict/result/rfgsm/B.txt')
     # predict('resnet32', 'pgd', '../Datasets/predict/B/', '../Datasets/predict/result/pgd/B.txt')
-    # predict('resnet32', 'mixed', '../Datasets/predict/B/', '../Datasets/predict/result/mixed/B.txt')
+    predict('resnet32', 'mixed', '../Datasets/predict/clean/', '../Datasets/predict/result/mixed/clean.txt')
     # predict('swin-t', 'swin-t', '../Datasets/predict/up/', '../Datasets/predict/result/swin-t/提高.txt')

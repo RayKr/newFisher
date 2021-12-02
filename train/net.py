@@ -7,7 +7,7 @@ pre_model_path = {
     'fgsm': './net/fgsm/net_170.pth',
     'rfgsm': './net/pre_rfgsm/net_125_best.pth',
     'pgd': './net/pgd/net_150.pth',
-    'mixed': './net/mixed/net_100.pth',
+    'mixed': './net/mixed/net_170.pth',
     'swin-t': './net/swin_t/net_100.pth',
 }
 
