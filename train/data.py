@@ -1,3 +1,4 @@
+import torchvision
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
@@ -21,10 +22,10 @@ transform_train = transforms.Compose([
 
 # 读取数据
 # 原始数据包
-# cifar_train = torchvision.datasets.CIFAR10(root='../Datasets/', train=True, download=True, transform=transform_train)
-# cifar_test = torchvision.datasets.CIFAR10(root='../Datasets/', train=False, download=True, transform=transform_train)
-# cl_train_loader = DataLoader(cifar_train, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
-# cl_test_loader = DataLoader(cifar_test, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
+cifar_train = torchvision.datasets.CIFAR10(root='../Datasets/', train=True, download=True, transform=transform_train)
+cifar_test = torchvision.datasets.CIFAR10(root='../Datasets/', train=False, download=True, transform=transform_train)
+org_train_loader = DataLoader(cifar_train, batch_size=BATCH_SIZE, shuffle=True, num_workers=8)
+org_test_loader = DataLoader(cifar_test, batch_size=BATCH_SIZE, shuffle=False, num_workers=8)
 
 # clean样本集
 read_set = ReadSet(filename='../Datasets/CIFAR-10/clean_label.txt', image_dir='../Datasets/CIFAR-10/clean_png/', count=50000, transform=transform_train)

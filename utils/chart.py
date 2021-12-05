@@ -65,5 +65,5 @@ def show_log(file_path, title):
     plt.show()
 
 
-show_acc('../train/net/swin_t/acc.txt', 'Swin Transformer Train', max_epoch=100)
-show_log('../train/net/swin_t/log.txt', 'Swin Transformer Train')
+show_acc('../train/net/original/acc.txt', 'Original Train', max_epoch=100)
+# show_log('../train/net/jpg/log.txt', 'JPG Clean Train')

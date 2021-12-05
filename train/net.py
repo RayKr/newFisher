@@ -4,6 +4,9 @@ from model.swin_transformer import SwinTransformer
 pre_model_path = {
     'pre': './net/pre_train/net_070.pth',
     'clean': './net/clean/net_100.pth',
+    'jpg': './net/jpg/net_100.pth',
+    'png': './net/png/net_100.pth',
+    'original': './net/original/net_100.pth',
     'fgsm': './net/fgsm/net_170.pth',
     'rfgsm': './net/pre_rfgsm/net_125_best.pth',
     'pgd': './net/pgd/net_150.pth',
