@@ -27,10 +27,10 @@ def attack_test(model_name, pre_model_name, desc=None, attack_method=None, **kwa
 def robust_test(model_name='resnet32', pre_model_name='clean', model_title='Clean预训练模型'):
     print(f'--------------{model_title}--------------')
     attack_test(model_name, pre_model_name, '【无攻击】')
-    # attack_test(model_name, pre_model_name, '【FGSM攻击：epsilon=0.1】', attack_method='fgsm', epsilon=0.1)
-    # attack_test(model_name, pre_model_name, '【PGD攻击：epsilon=0.3, alpha=2/255, iters=20】', attack_method='pgd', epsilon=0.3, alpha=2/255, iters=20)
-    # attack_test(model_name, pre_model_name, '【RFGSM攻击：alpha=0.1, eps=0.5】', attack_method='rfgsm', alpha=0.1, eps=0.5)
-    # attack_test(model_name, pre_model_name, '【FGM攻击：epsilon=0.15】', attack_method='fgm', epsilon=0.15)
+    attack_test(model_name, pre_model_name, '【FGSM攻击：epsilon=0.1】', attack_method='fgsm', epsilon=0.1)
+    attack_test(model_name, pre_model_name, '【PGD攻击：epsilon=0.3, alpha=2/255, iters=20】', attack_method='pgd', epsilon=0.3, alpha=2/255, iters=20)
+    attack_test(model_name, pre_model_name, '【RFGSM攻击：alpha=0.1, eps=0.5】', attack_method='rfgsm', alpha=0.1, eps=0.5)
+    attack_test(model_name, pre_model_name, '【FGM攻击：epsilon=0.15】', attack_method='fgm', epsilon=0.15)
 
 
 if __name__ == "__main__":

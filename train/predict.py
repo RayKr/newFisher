@@ -59,9 +59,13 @@ def predict(model_name, pre_model_name, input_path, out_filename):
 
 
 if __name__ == "__main__":
-    # predict('resnet32', 'clean', '../Datasets/predict/B/', '../Datasets/predict/result/clean/B.txt')
-    # predict('resnet32', 'fgsm', '../Datasets/predict/B/', '../Datasets/predict/result/fgsm/B.txt')
-    # predict('resnet32', 'rfgsm', '../Datasets/predict/B/', '../Datasets/predict/result/rfgsm/B.txt')
-    # predict('resnet32', 'pgd', '../Datasets/predict/B/', '../Datasets/predict/result/pgd/B.txt')
-    predict('resnet32', 'mixed', '../Datasets/predict/clean/', '../Datasets/predict/result/mixed/clean.txt')
-    # predict('swin-t', 'swin-t', '../Datasets/predict/up/', '../Datasets/predict/result/swin-t/提高.txt')
+    # predict('resnet32', 'clean', '../Datasets/predict/cleanJPG/', '../Datasets/predict/result/clean/cleanJPG.txt')
+    # predict('resnet32', 'fgsm', '../Datasets/predict/cleanJPG/', '../Datasets/predict/result/fgsm/cleanJPG.txt')
+    # predict('resnet32', 'rfgsm', '../Datasets/predict/cleanJPG/', '../Datasets/predict/result/rfgsm/cleanJPG.txt')
+    # predict('resnet32', 'pgd', '../Datasets/predict/cleanJPG/', '../Datasets/predict/result/pgd/cleanJPG.txt')
+    # predict('resnet32', 'mixed', '../Datasets/predict/cleanJPG/', '../Datasets/predict/result/mixed/cleanJPG.txt')
+    # predict('swin-t', 'swin-t', '../Datasets/predict/cleanJPG/', '../Datasets/predict/result/swin-t/cleanJPG.txt')
+    predict('resnet32', 'jpg', '../Datasets/predict/AJPG/', '../Datasets/predict/result/jpg/AJPG.txt')
+    predict('resnet32', 'jpg', '../Datasets/predict/BJPG/', '../Datasets/predict/result/jpg/BJPG.txt')
+    predict('resnet32', 'jpg', '../Datasets/predict/upJPG/', '../Datasets/predict/result/jpg/提高JPG.txt')
+    predict('resnet32', 'jpg', '../Datasets/predict/cleanJPG/', '../Datasets/predict/result/jpg/cleanJPG.txt')
